@@ -100,7 +100,6 @@
   td.mid { text-align: center; white-space: nowrap; padding: 9px 6px; color: var(--muted); }
   td.v { text-align: right; font-weight: 700; font-size: 19px; padding-right: 6px; white-space: nowrap; }
   .sw { display: inline-block; width: 6px; height: 20px; border-radius: 3px; vertical-align: -4px; margin-right: 10px; }
-  .sw.tot { background: linear-gradient(var(--r1), var(--r3)); }
 
   /* Calls */
   .call { padding: 12px 0; border-bottom: 1px solid var(--line); }
@@ -254,12 +253,13 @@
     state.plan = { r: r, ms: ms, toMin: toMin };
 
     // Rest table: colour key strip matches the bar
-    var rows = ["<tr><td class='k'><span class='sw tot'></span>Total rest</td><td class='mid'>" + z(ms(r.start)) + "–" + z(ms(r.end)) +
+    var rows = ["<tr><td class='k'><span class='sw' style='background:transparent'></span>Total rest</td><td class='mid'>" + z(ms(r.start)) + "–" + z(ms(r.end)) +
       "</td><td class='v'>" + dur(r.total) + "</td></tr>"];
     r.rests.forEach(function (x, i) {
       rows.push("<tr data-i='" + i + "'><td class='k'><span class='sw' style='background:var(--r" + (i + 1) + ")'></span>" + ORD[i] +
         " rest</td><td class='mid'>" + z(ms(x.start)) + "–" + z(ms(x.end)) + "</td><td class='v'>" + dur(x.len) + "</td></tr>");
     });
+    rows.push("<tr><td class='k'><span class='sw' style='background:transparent'></span>ETA</td><td class='mid'></td><td class='v'>" + z(ms(r.eta)) + "</td></tr>");
     $("rBody").innerHTML = rows.join("");
     $("rTable").classList.remove("hidden"); $("rEmpty").classList.add("hidden");
 
