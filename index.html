@@ -13,7 +13,7 @@
 <title>Crew Rest Calculator</title>
 <style>
   /* Day: positive polarity (dark on light) for bright flight deck. Night: negative polarity,
-     near-black warm background, soft warm-grey text (moderate contrast, less glare/halation), no blue. */
+     dark navy background, soft blue-white text, same blue scheme as day, dimmed (moderate contrast, less glare). */
   :root, [data-theme="day"] {
     --bg: #e9edf1; --card: #ffffff; --line: #c3ccd5; --text: #0b0f14; --muted: #46515c;
     --input: #f4f6f8; --btn: #e3e8ee; --accent: #0b57d0; --on-accent: #ffffff;
@@ -21,10 +21,10 @@
     --r1: #85b7eb; --r2: #378add; --r3: #185fa5; --pp: #cfd6de; --cur: #0b0f14; --tag-text: #ffffff;
   }
   [data-theme="night"] {
-    --bg: #0e0d0b; --card: #171512; --line: #2d2a25; --text: #d6cdbd; --muted: #9c9385;
-    --input: #0e0d0b; --btn: #221f1b; --accent: #3b342b; --on-accent: #efe5d3;
-    --seg-on: #3b342b; --seg-on-text: #efe5d3; --warn: #e3876e;
-    --r1: #5e5548; --r2: #7d7161; --r3: #9e8f7a; --pp: #2d2a25; --cur: #efe5d3; --tag-text: #0e0d0b;
+    --bg: #0a0f1a; --card: #111827; --line: #243247; --text: #d5deea; --muted: #8e9cb1;
+    --input: #0a0f1a; --btn: #1a2436; --accent: #1f4f96; --on-accent: #e6eefb;
+    --seg-on: #1f4f96; --seg-on-text: #e6eefb; --warn: #f08a7a;
+    --r1: #4a78b8; --r2: #345f9c; --r3: #22487e; --pp: #223047; --cur: #e6eefb; --tag-text: #0a0f1a;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
@@ -39,7 +39,7 @@
   .wrap { max-width: 520px; margin: 0 auto; display: grid; gap: 12px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
   .card h2 { font-size: 13px; letter-spacing: .8px; color: var(--muted); margin: 0 0 10px; font-weight: 600; text-transform: uppercase; }
-  .ic { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.28em; margin-right: 6px; flex: none; }
+  .ic { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.28em; margin-left: 6px; flex: none; }
   label.f { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; letter-spacing: .5px; }
   .field { margin-bottom: 14px; }
   .inbox { position: relative; }
@@ -50,7 +50,7 @@
   .seg { display: flex; background: var(--input); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
   .seg button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 16px; padding: 10px 4px; border-radius: 8px; font-weight: 600; }
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--seg-on-text); }
-  [data-theme="night"] .seg button[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px #8f8270; }
+  [data-theme="night"] .seg button[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px #5d8fd6; }
   .seg.sm button { font-size: 15px; padding: 8px 2px; }
   .btns { display: flex; gap: 10px; }
   .btn { flex: 1; border: 1px solid var(--line); background: var(--btn); color: var(--text); font-size: 16px; font-weight: 600;
@@ -75,7 +75,7 @@
   .vmk { position: relative; height: 18px; margin-top: 3px; color: var(--muted); }
   .vmk .ic { position: absolute; width: 15px; height: 15px; margin: 0; transform: translateX(-50%); }
   .vax { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .vax .ic { width: 14px; height: 14px; margin-right: 3px; }
+  .vax .ic { width: 14px; height: 14px; margin-left: 3px; }
   .call { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .call:last-of-type { border-bottom: 0; }
   .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
@@ -103,11 +103,11 @@
 <div class="wrap">
   <section class="card" id="inputs">
     <div class="field">
-      <label class="f" for="to"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-14.489 3.883l-4.45 -5.02l2.897 -.776l2.45 1.414l2.897 -.776l-3.743 -6.244l2.898 -.777l5.675 5.727z"/><path d="M3 21h18"/></svg>TAKE OFF TIME UTC</label>
+      <label class="f" for="to">TAKE OFF TIME UTC<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-14.489 3.883l-4.45 -5.02l2.897 -.776l2.45 1.414l2.897 -.776l-3.743 -6.244l2.898 -.777l5.675 5.727z"/><path d="M3 21h18"/></svg></label>
       <div class="inbox"><input id="to" inputmode="numeric" maxlength="5" placeholder="HH:MM" autocomplete="off"><span class="sfx">Z</span></div>
     </div>
     <div class="field">
-      <label class="f" for="ft"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7h11"/><path d="M6.5 17h11"/><path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1z"/><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1z"/></svg>FLIGHT TIME</label>
+      <label class="f" for="ft">FLIGHT TIME<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7h11"/><path d="M6.5 17h11"/><path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1z"/><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1z"/></svg></label>
       <div class="inbox"><input id="ft" inputmode="numeric" maxlength="5" placeholder="HH:MM" autocomplete="off"></div>
     </div>
     <div class="field">
@@ -122,7 +122,7 @@
   </section>
 
   <section class="card" id="results">
-    <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h6l-6 8h6"/><path d="M14 4h6l-6 8h6"/></svg>Rest</h2>
+    <h2>Rest<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h6l-6 8h6"/><path d="M14 4h6l-6 8h6"/></svg></h2>
     <div class="empty" id="rEmpty">Enter take off time and flight time</div>
     <div id="viz" class="hidden">
       <div class="vnow"><span id="vState"></span><span class="big" id="vLeft"></span></div>
@@ -134,7 +134,7 @@
   </section>
 
   <section class="card" id="calls">
-    <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M12 10v3h2"/><path d="M7 4l-2.75 2"/><path d="M17 4l2.75 2"/></svg>Calls</h2>
+    <h2>Calls<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M12 10v3h2"/><path d="M7 4l-2.75 2"/><path d="M17 4l2.75 2"/></svg></h2>
     <div class="empty" id="cEmpty">No calls yet</div>
     <div id="cList"></div>
   </section>
@@ -231,7 +231,7 @@
         return "<button type='button' data-i='" + i + "' data-l='" + l + "' aria-pressed='" + (state.leads[i] === l) + "'>" +
           (l === 0 ? "At" : "−" + l) + "</button>";
       }).join("");
-      return "<div class='call' data-i='" + i + "'><div class='top'><span><svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg>End " + ORD[i] + " rest <span class='ho'>" +
+      return "<div class='call' data-i='" + i + "'><div class='top'><span>End " + ORD[i] + " rest<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg> <span class='ho'>" +
         z(ms(x.end)) + "</span></span><span class='ct' id='ct" + i + "'>" + z(ms(x.end - state.leads[i])) +
         "</span></div><div class='tm'><span>Clock timer</span><span class='tv' id='tm" + i + "'></span></div>" +
         "<div class='seg sm'>" + segs + "</div></div>";
@@ -276,7 +276,7 @@
       if (tm) tm.textContent = t > now ? dur(Math.floor((t - now) / 60000)) : "Passed";
       return ALARM.replace("class='ic'", "class='ic' style='left:" + ((t - t0) / span * 100) + "%'");
     }).join("");
-    $("vNext").innerHTML = next === null ? "No more calls" : ALARM + "Next call " + z(next);
+    $("vNext").innerHTML = next === null ? "No more calls" : "Next call " + z(next) + ALARM;
   }
   setInterval(tick, 30000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
@@ -314,7 +314,7 @@
   function setTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     themeBtn.textContent = t === "night" ? "DAY" : "NIGHT";
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0e0d0b" : "#e9edf1");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0a0f1a" : "#e9edf1");
     try { localStorage.setItem("crTheme", t); } catch (e) {}
   }
   themeBtn.addEventListener("click", function () {
