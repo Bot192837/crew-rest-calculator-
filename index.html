@@ -418,19 +418,21 @@
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
 
   // HH:MM inputs: colon auto-inserted while typing.
-  // Flight time max 20 h: a first digit 3-9 (or 2 then 1-9) is a single-digit hour, so 900 reads as 09:00.
+  // Single-digit hours: if the digits typed can't start a valid hour, a leading 0 is added.
+  // Take-off (max 23 h): 500 -> 05:00, 245 -> 02:45. Flight time (max 20 h): 900 -> 09:00.
   function colon(el, maxH) {
+    var tens = Math.floor(maxH / 10), units = maxH % 10;
     el.addEventListener("input", function (e) {
       var d = el.value.replace(/\D/g, "");
-      if (maxH && e.inputType !== "deleteContentBackward" && d.length && d[0] !== "0" &&
-          (+d[0] > 2 || (d[0] === "2" && d.length > 1 && d[1] !== "0"))) d = "0" + d;
+      if (e.inputType !== "deleteContentBackward" && d.length && d[0] !== "0" &&
+          (+d[0] > tens || (+d[0] === tens && d.length > 1 && +d[1] > units))) d = "0" + d;
       d = d.slice(0, 4);
       if (e.inputType === "deleteContentBackward" && d.length === 2) el.value = d;
       else el.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : (d.length === 2 ? d + ":" : d);
       render();
     });
   }
-  colon(toEl); colon(ftEl, 20);
+  colon(toEl, 23); colon(ftEl, 20);
   opEl.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     state.n = +b.dataset.n;
