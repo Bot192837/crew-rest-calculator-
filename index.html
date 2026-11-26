@@ -37,6 +37,7 @@
   .wrap { max-width: 520px; margin: 0 auto; display: grid; gap: 12px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
   .card h2 { font-size: 13px; letter-spacing: .8px; color: var(--muted); margin: 0 0 10px; font-weight: 600; text-transform: uppercase; }
+  .ic { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.28em; margin-right: 6px; flex: none; }
   label.f { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; letter-spacing: .5px; }
   .field { margin-bottom: 14px; }
   .inbox { position: relative; }
@@ -86,11 +87,11 @@
 <div class="wrap">
   <section class="card" id="inputs">
     <div class="field">
-      <label class="f" for="to">TAKE OFF TIME UTC</label>
+      <label class="f" for="to"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-14.489 3.883l-4.45 -5.02l2.897 -.776l2.45 1.414l2.897 -.776l-3.743 -6.244l2.898 -.777l5.675 5.727z"/><path d="M3 21h18"/></svg>TAKE OFF TIME UTC</label>
       <div class="inbox"><input id="to" inputmode="numeric" maxlength="5" placeholder="HH:MM" autocomplete="off"><span class="sfx">Z</span></div>
     </div>
     <div class="field">
-      <label class="f" for="ft">FLIGHT TIME</label>
+      <label class="f" for="ft"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7h11"/><path d="M6.5 17h11"/><path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1z"/><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1z"/></svg>FLIGHT TIME</label>
       <div class="inbox"><input id="ft" inputmode="numeric" maxlength="5" placeholder="HH:MM" autocomplete="off"></div>
     </div>
     <div class="field">
@@ -105,13 +106,13 @@
   </section>
 
   <section class="card" id="results">
-    <h2>Rest</h2>
+    <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h6l-6 8h6"/><path d="M14 4h6l-6 8h6"/></svg>Rest</h2>
     <div class="empty" id="rEmpty">Enter take off time and flight time</div>
     <table id="rTable" class="hidden"><tbody id="rBody"></tbody></table>
   </section>
 
   <section class="card" id="calls">
-    <h2>Calls</h2>
+    <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M12 10v3h2"/><path d="M7 4l-2.75 2"/><path d="M17 4l2.75 2"/></svg>Calls</h2>
     <div class="empty" id="cEmpty">No calls yet</div>
     <div id="cList"></div>
     <div class="btns" style="margin-top:12px"><button type="button" class="btn primary" id="alarms" disabled>SET ALARMS</button></div>
@@ -208,7 +209,7 @@
         return "<button type='button' data-i='" + i + "' data-l='" + l + "' aria-pressed='" + (state.leads[i] === l) + "'>" +
           (l === 0 ? "At" : "−" + l) + "</button>";
       }).join("");
-      return "<div class='call' data-i='" + i + "'><div class='top'><span>End " + ORD[i] + " rest <span class='ho'>" +
+      return "<div class='call' data-i='" + i + "'><div class='top'><span><svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg>End " + ORD[i] + " rest <span class='ho'>" +
         z(ms(x.end)) + "</span></span><span class='ct' id='ct" + i + "'>" + z(ms(x.end - state.leads[i])) +
         "</span></div><div class='seg sm'>" + segs + "</div></div>";
     }).join("");
