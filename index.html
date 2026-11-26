@@ -78,10 +78,11 @@
   .vax .ic { width: 14px; height: 14px; margin-right: 3px; }
   .call { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .call:last-of-type { border-bottom: 0; }
-  .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .call .tm { display: flex; justify-content: space-between; color: var(--muted); font-size: 15px; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+  .call .tm .tv { font-weight: 700; color: var(--text); }
   .call .ct { font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; }
   .call .ho { color: var(--muted); font-size: 14px; }
-  .note { color: var(--muted); font-size: 13px; margin-top: 10px; min-height: 18px; }
   .hidden { display: none !important; }
   .empty { color: var(--muted); font-size: 15px; text-align: center; padding: 8px 0; }
 
@@ -136,15 +137,12 @@
     <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M12 10v3h2"/><path d="M7 4l-2.75 2"/><path d="M17 4l2.75 2"/></svg>Calls</h2>
     <div class="empty" id="cEmpty">No calls yet</div>
     <div id="cList"></div>
-    <div class="btns" style="margin-top:12px"><button type="button" class="btn primary" id="alarms" disabled>SET ALARMS</button></div>
-    <div class="note" id="aNote"></div>
   </section>
 </div>
 
 <script>
 (function () {
   "use strict";
-  var SHORTCUT = "Crew Rest Alarms";
   var LEADS = [0, 5, 10, 15];
   var ORD = ["1st", "2nd", "3rd"];
   var $ = function (id) { return document.getElementById(id); };
@@ -199,12 +197,10 @@
     var r = (toMin !== null && ftMin !== null) ? calc(toMin, ftMin, state.n) : null;
     if (r && r.error) { err = r.error; r = null; }
     $("err").textContent = err;
-    $("aNote").textContent = "";
 
     if (!r) {
       $("rTable").classList.add("hidden"); $("viz").classList.add("hidden"); $("rEmpty").classList.remove("hidden");
       $("cList").innerHTML = ""; $("cEmpty").classList.remove("hidden");
-      $("alarms").disabled = true;
       return;
     }
     var t0 = anchor(toMin, ftMin, Date.now()) - toMin * 60000; // 0000Z of take-off day
@@ -237,10 +233,10 @@
       }).join("");
       return "<div class='call' data-i='" + i + "'><div class='top'><span><svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg>End " + ORD[i] + " rest <span class='ho'>" +
         z(ms(x.end)) + "</span></span><span class='ct' id='ct" + i + "'>" + z(ms(x.end - state.leads[i])) +
-        "</span></div><div class='seg sm'>" + segs + "</div></div>";
+        "</span></div><div class='tm'><span>Clock timer</span><span class='tv' id='tm" + i + "'></span></div>" +
+        "<div class='seg sm'>" + segs + "</div></div>";
     }).join("");
     $("cEmpty").classList.add("hidden");
-    $("alarms").disabled = false;
     tick();
   }
 
@@ -276,23 +272,14 @@
     $("vMk").innerHTML = r.rests.map(function (x, k) {
       var t = p.ms(x.end - state.leads[k]);
       if (t > now && (next === null || t < next)) next = t;
+      var tm = $("tm" + k);
+      if (tm) tm.textContent = t > now ? dur(Math.floor((t - now) / 60000)) : "Passed";
       return ALARM.replace("class='ic'", "class='ic' style='left:" + ((t - t0) / span * 100) + "%'");
     }).join("");
     $("vNext").innerHTML = next === null ? "No more calls" : ALARM + "Next call " + z(next);
   }
   setInterval(tick, 30000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
-
-  function callList(now) {
-    var p = state.plan, out = [], skipped = 0;
-    p.r.rests.forEach(function (x, i) {
-      var t = p.ms(x.end - state.leads[i]);
-      var sec = Math.round((t - now) / 1000);
-      if (sec <= 0) { skipped++; return; }
-      out.push({ sec: sec, label: "End " + ORD[i] + " rest " + z(t) });
-    });
-    return { calls: out, skipped: skipped };
-  }
 
   // Input formatting
   // HH:MM inputs: colon auto-inserted while typing.
@@ -321,16 +308,6 @@
     [].forEach.call(opEl.children, function (c, i) { c.setAttribute("aria-pressed", i === 0); });
     render();
   });
-  $("alarms").addEventListener("click", function () {
-    if (!state.plan) return;
-    var res = callList(Date.now());
-    if (!res.calls.length) { $("aNote").textContent = "All call times have passed. No alarms set."; return; }
-    var text = res.calls.map(function (c) { return c.sec + "|" + c.label; }).join("\n");
-    var url = "shortcuts://run-shortcut?name=" + encodeURIComponent(SHORTCUT) + "&input=text&text=" + encodeURIComponent(text);
-    $("aNote").textContent = "Sent " + res.calls.length + " alarm" + (res.calls.length > 1 ? "s" : "") + " to Shortcuts" +
-      (res.skipped ? " (" + res.skipped + " skipped: time passed)" : "") + ".";
-    CR.launch(url);
-  });
 
   // Day / night colours. Saved on this device; first launch follows the phone's dark setting.
   var themeBtn = $("theme");
@@ -347,8 +324,7 @@
   try { saved = localStorage.getItem("crTheme"); } catch (e) {}
   setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day"));
 
-  window.CR = { calc: calc, anchor: anchor, callList: callList, state: state, render: render, tick: tick,
-    launch: function (url) { window.location.href = url; } };
+  window.CR = { calc: calc, anchor: anchor, state: state, render: render, tick: tick };
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
     navigator.serviceWorker.register("sw.js");

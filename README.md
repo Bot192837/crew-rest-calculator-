@@ -23,27 +23,13 @@ Offline crew rest calculator for double and augmented crew ops. Works in airplan
 
 After an update, open the app once with signal to get the new version.
 
-## Set up the "Crew Rest Alarms" Shortcut (do once)
-The app sends each call as `seconds-from-now|label`, one per line. The Shortcut turns each line into a Clock alarm. Because the app sends time from now, not a clock time, the phone's time zone setting does not matter when you set the alarms.
+## Set a call
+1. Choose **At / −5 / −10 / −15** for the call.
+2. Read the **Clock timer** value under the call (time from now until the call).
+3. Open **Clock → Timers** and set that time. Start it.
 
-1. Open **Shortcuts** → **+** → name it exactly `Crew Rest Alarms`.
-2. Tap **ⓘ**. If it shows a **Receive** input setting, set it to **Text**.
-3. Add **Split Text**: input `Shortcut Input`, separator **New Lines**.
-4. Add **Repeat with Each** item in `Split Text`.
-5. Inside the repeat, add **Split Text**: input `Repeat Item`, separator **Custom** → `|`.
-6. Add **Get Item from List**: **First Item** from `Split Text` (this is the seconds).
-7. Add **Get Item from List**: **Last Item** from the same `Split Text` (this is the label).
-8. Add **Adjust Date**: **Add** `First Item` **seconds** to `Current Date`.
-9. Add **Create Alarm**: time `Adjusted Date`, label `Last Item`.
-10. Leave **End Repeat** at the end.
-
-### Test it on the ground
-1. Enter a take-off time a few minutes ago and a flight time, e.g. 02:00 (gives a call ~15 min later).
-2. Tap **SET ALARMS**. Shortcuts opens and creates the alarms.
-3. Open **Clock → Alarms** and check the times (shown in phone local time).
+The timer value updates every 30 s. It rounds down, so the timer rings at the call time or up to 1 min early, never late. A timer counts down in real time, so a phone time zone change does not affect it. iOS runs one Clock timer at a time: set the next call's timer, then set the following one after it rings.
 
 ## Watch-outs
-- Clock alarms keep their local clock time. If the phone time zone changes after you set them (e.g. inflight Wi-Fi with automatic time zone), tap **SET ALARMS** again.
-- Calls that have already passed are skipped.
-- Old alarms stay in the Clock app. Delete them after the flight.
-- Take-off date: if now is between take-off and ETA, the app uses that flight. Otherwise it uses the next take-off at that time.
+- After a call time passes, the app shows **Passed** for it.
+- Take-off date: if now is between take-off and 6 h after ETA, the app uses that flight. Otherwise it uses the next take-off at that time.
