@@ -22,7 +22,7 @@
     --r1t: #042c53; --r2t: #ffffff; --r3t: #ffffff;
     --now-bg: #0b57d0; --now-text: #ffffff; --now-sub: #d6e6fb; --hl: #e6f1fb;
     --shadow: 0 1px 2px rgba(15,30,50,.06), 0 4px 16px rgba(15,30,50,.07); --cardline: transparent;
-    --call: #9a5b00; --call-ic: #c27400;
+    --call: #9a5b00; --call-ic: #c27400; --bad-bg: #fdeceb;
   }
   [data-theme="night"] {
     --bg: #0f1216; --card: #181c22; --line: #2b3139; --text: #e2e6eb; --muted: #99a2ad;
@@ -32,7 +32,7 @@
     --r1t: #0d2747; --r2t: #ffffff; --r3t: #eaf1fb;
     --now-bg: #2457a8; --now-text: #f4f7fb; --now-sub: #cfe0f7; --hl: #1f2b3d;
     --shadow: none; --cardline: #2b3139;
-    --call: #f2b85a; --call-ic: #e9a93f;
+    --call: #f2b85a; --call-ic: #e9a93f; --bad-bg: #2a1716;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
@@ -67,6 +67,7 @@
   .inbox input { width: 100%; font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 10px 40px 10px 14px;
     background: var(--input); color: var(--text); border: 1px solid var(--line); border-radius: 12px; outline: none; }
   .inbox input:focus { border-color: var(--accent); }
+  .inbox input.bad, .inbox input.bad:focus { border-color: var(--warn); box-shadow: 0 0 0 1.5px var(--warn); background: var(--bad-bg); }
   .inbox .sfx { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--muted); pointer-events: none; }
   .seg { display: flex; background: var(--input); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
   .seg button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 16px; padding: 10px 4px; border-radius: 9px; font-weight: 600; }
@@ -235,8 +236,12 @@
     var toV = toEl.value, ftV = ftEl.value, err = "";
     var toMin = parseTO(toV), ftMin = parseFT(ftV);
     state.plan = null;
-    if (toV.length === 5 && toMin === null) err = "Take off time: use HH:MM, 00:00 to 23:59";
-    else if (ftV.length === 5 && ftMin === null) err = "Flight time: use HH:MM, minutes 00 to 59";
+    var td = toV.replace(/\D/g, "");
+    var toBad = (td.length >= 2 && +td.slice(0, 2) > 23) || (td.length >= 3 && +td[2] > 5) || (toV.length === 5 && toMin === null);
+    toEl.classList.toggle("bad", toBad);
+    if (ftMin !== null && ftMin > 1200) ftMin = null;
+    if (toBad) err = "Take off time: use HH:MM, 00:00 to 23:59";
+    else if (ftV.length === 5 && ftMin === null) err = "Flight time: use HH:MM, max 20:00";
     var r = (toMin !== null && ftMin !== null) ? calc(toMin, ftMin, state.n) : null;
     if (r && r.error) { err = r.error; r = null; }
     $("err").textContent = err;
@@ -333,15 +338,19 @@
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
 
   // HH:MM inputs: colon auto-inserted while typing.
-  function colon(el) {
+  // Flight time max 20 h: a first digit 3-9 (or 2 then 1-9) is a single-digit hour, so 900 reads as 09:00.
+  function colon(el, maxH) {
     el.addEventListener("input", function (e) {
-      var d = el.value.replace(/\D/g, "").slice(0, 4);
+      var d = el.value.replace(/\D/g, "");
+      if (maxH && e.inputType !== "deleteContentBackward" && d.length && d[0] !== "0" &&
+          (+d[0] > 2 || (d[0] === "2" && d.length > 1 && d[1] !== "0"))) d = "0" + d;
+      d = d.slice(0, 4);
       if (e.inputType === "deleteContentBackward" && d.length === 2) el.value = d;
       else el.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : (d.length === 2 ? d + ":" : d);
       render();
     });
   }
-  colon(toEl); colon(ftEl);
+  colon(toEl); colon(ftEl, 20);
   opEl.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     state.n = +b.dataset.n;
