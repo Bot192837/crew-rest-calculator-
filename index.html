@@ -13,16 +13,16 @@
 <title>Crew Rest Calculator</title>
 <style>
   /* Day: positive polarity (dark on light) for bright flight deck. Night: negative polarity,
-     black background (OLED pixels off), dim long-wavelength amber, no blue. */
+     near-black warm background, soft warm-grey text (moderate contrast, less glare/halation), no blue. */
   :root, [data-theme="day"] {
     --bg: #e9edf1; --card: #ffffff; --line: #c3ccd5; --text: #0b0f14; --muted: #46515c;
     --input: #f4f6f8; --btn: #e3e8ee; --accent: #0b57d0; --on-accent: #ffffff;
     --seg-on: #0b57d0; --seg-on-text: #ffffff; --warn: #b3261e;
   }
   [data-theme="night"] {
-    --bg: #000000; --card: #0b0805; --line: #2e2213; --text: #e8a94f; --muted: #a87a38;
-    --input: #000000; --btn: #1a1209; --accent: #3a2709; --on-accent: #ffbe5c;
-    --seg-on: #3a2709; --seg-on-text: #ffbe5c; --warn: #ff7a45;
+    --bg: #0e0d0b; --card: #171512; --line: #2d2a25; --text: #d6cdbd; --muted: #9c9385;
+    --input: #0e0d0b; --btn: #221f1b; --accent: #3b342b; --on-accent: #efe5d3;
+    --seg-on: #3b342b; --seg-on-text: #efe5d3; --warn: #e3876e;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
@@ -47,7 +47,7 @@
   .seg { display: flex; background: var(--input); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
   .seg button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 16px; padding: 10px 4px; border-radius: 8px; font-weight: 600; }
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--seg-on-text); }
-  [data-theme="night"] .seg button[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px #c98b36; }
+  [data-theme="night"] .seg button[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px #8f8270; }
   .seg.sm button { font-size: 15px; padding: 8px 2px; }
   .btns { display: flex; gap: 10px; }
   .btn { flex: 1; border: 1px solid var(--line); background: var(--btn); color: var(--text); font-size: 16px; font-weight: 600;
@@ -87,7 +87,7 @@
   <section class="card" id="inputs">
     <div class="field">
       <label class="f" for="to">TAKE OFF TIME UTC</label>
-      <div class="inbox"><input id="to" inputmode="numeric" maxlength="4" placeholder="HHMM" autocomplete="off"><span class="sfx">Z</span></div>
+      <div class="inbox"><input id="to" inputmode="numeric" maxlength="5" placeholder="HH:MM" autocomplete="off"><span class="sfx">Z</span></div>
     </div>
     <div class="field">
       <label class="f" for="ft">FLIGHT TIME</label>
@@ -147,9 +147,9 @@
   }
 
   function parseTO(v) {
-    if (!/^\d{4}$/.test(v)) return null;
-    var h = +v.slice(0, 2), m = +v.slice(2);
-    return h < 24 && m < 60 ? h * 60 + m : null;
+    var m = /^(\d{2}):(\d{2})$/.exec(v);
+    if (!m) return null;
+    return +m[1] < 24 && +m[2] < 60 ? +m[1] * 60 + +m[2] : null;
   }
   function parseFT(v) {
     var m = /^(\d{1,2}):(\d{2})$/.exec(v);
@@ -172,7 +172,7 @@
     var toV = toEl.value, ftV = ftEl.value, err = "";
     var toMin = parseTO(toV), ftMin = parseFT(ftV);
     state.plan = null;
-    if (toV.length === 4 && toMin === null) err = "Take off time: use HHMM, 0000 to 2359";
+    if (toV.length === 5 && toMin === null) err = "Take off time: use HH:MM, 00:00 to 23:59";
     else if (ftV.length === 5 && ftMin === null) err = "Flight time: use HH:MM, minutes 00 to 59";
     var r = (toMin !== null && ftMin !== null) ? calc(toMin, ftMin, state.n) : null;
     if (r && r.error) { err = r.error; r = null; }
@@ -228,13 +228,16 @@
   }
 
   // Input formatting
-  toEl.addEventListener("input", function () { toEl.value = toEl.value.replace(/\D/g, "").slice(0, 4); render(); });
-  ftEl.addEventListener("input", function (e) {
-    var d = ftEl.value.replace(/\D/g, "").slice(0, 4);
-    if (e.inputType === "deleteContentBackward" && d.length === 2) ftEl.value = d;
-    else ftEl.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : (d.length === 2 ? d + ":" : d);
-    render();
-  });
+  // HH:MM inputs: colon auto-inserted while typing.
+  function colon(el) {
+    el.addEventListener("input", function (e) {
+      var d = el.value.replace(/\D/g, "").slice(0, 4);
+      if (e.inputType === "deleteContentBackward" && d.length === 2) el.value = d;
+      else el.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : (d.length === 2 ? d + ":" : d);
+      render();
+    });
+  }
+  colon(toEl); colon(ftEl);
   opEl.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
     state.n = +b.dataset.n;
@@ -267,7 +270,7 @@
   function setTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     themeBtn.textContent = t === "night" ? "DAY" : "NIGHT";
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#000000" : "#e9edf1");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0e0d0b" : "#e9edf1");
     try { localStorage.setItem("crTheme", t); } catch (e) {}
   }
   themeBtn.addEventListener("click", function () {

@@ -12,7 +12,7 @@ Offline crew rest calculator for double and augmented crew ops. Works in airplan
 
 ## Day / night colours
 - **Day:** dark text on a light background, which reads better in bright light.
-- **Night:** dim amber on black, with no blue light, which helps keep your night vision.
+- **Night:** soft warm-grey text on a near-black background, with no blue light. Medium contrast reduces glare and blur around the text.
 - Tap **NIGHT / DAY** at top right to switch. The app remembers your choice. First launch follows the phone's dark mode setting.
 - At night, also set the phone brightness low.
 
