@@ -10,6 +10,12 @@ Offline crew rest calculator for double and augmented crew ops. Works in airplan
 - Double = 2 rests, Augmented = 3 rests. Equal whole minutes. Leftover minutes go to the last rest.
 - Calls: one per handover (end of each rest), set at the handover or 5 / 10 / 15 min before.
 
+## Day / night colours
+- **Day:** dark text on a light background, which reads better in bright light.
+- **Night:** dim amber on black, with no blue light, which helps keep your night vision.
+- Tap **NIGHT / DAY** at top right to switch. The app remembers your choice. First launch follows the phone's dark mode setting.
+- At night, also set the phone brightness low.
+
 ## Install on iPhone / iPad (do once, with signal)
 1. Open the app link in **Safari**.
 2. Tap **Share → Add to Home Screen**.
