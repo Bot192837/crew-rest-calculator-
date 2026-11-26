@@ -18,11 +18,13 @@
     --bg: #e9edf1; --card: #ffffff; --line: #c3ccd5; --text: #0b0f14; --muted: #46515c;
     --input: #f4f6f8; --btn: #e3e8ee; --accent: #0b57d0; --on-accent: #ffffff;
     --seg-on: #0b57d0; --seg-on-text: #ffffff; --warn: #b3261e;
+    --r1: #85b7eb; --r2: #378add; --r3: #185fa5; --pp: #cfd6de; --cur: #0b0f14; --tag-text: #ffffff;
   }
   [data-theme="night"] {
     --bg: #0e0d0b; --card: #171512; --line: #2d2a25; --text: #d6cdbd; --muted: #9c9385;
     --input: #0e0d0b; --btn: #221f1b; --accent: #3b342b; --on-accent: #efe5d3;
     --seg-on: #3b342b; --seg-on-text: #efe5d3; --warn: #e3876e;
+    --r1: #5e5548; --r2: #7d7161; --r3: #9e8f7a; --pp: #2d2a25; --cur: #efe5d3; --tag-text: #0e0d0b;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
@@ -60,7 +62,20 @@
   td { padding: 8px 0; border-bottom: 1px solid var(--line); }
   tr:last-child td { border-bottom: 0; }
   td.v { text-align: right; font-weight: 600; font-size: 18px; }
-  td.sub { color: var(--muted); font-size: 14px; text-align: right; padding-left: 8px; white-space: nowrap; }
+  td.mid { text-align: center; white-space: nowrap; padding: 8px 6px; }
+  #viz { margin-bottom: 14px; }
+  .vnow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 30px; }
+  .vnow .big { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .vbar { position: relative; }
+  .vseg { display: flex; height: 18px; border-radius: 9px; overflow: hidden; }
+  .vseg div { height: 100%; }
+  .vcur { position: absolute; top: -4px; height: 26px; border-left: 2px solid var(--cur); margin-left: -1px; }
+  .vtag { position: absolute; top: -26px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+    background: var(--cur); color: var(--tag-text); padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
+  .vmk { position: relative; height: 18px; margin-top: 3px; color: var(--muted); }
+  .vmk .ic { position: absolute; width: 15px; height: 15px; margin: 0; transform: translateX(-50%); }
+  .vax { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .vax .ic { width: 14px; height: 14px; margin-right: 3px; }
   .call { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .call:last-of-type { border-bottom: 0; }
   .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
@@ -108,6 +123,12 @@
   <section class="card" id="results">
     <h2><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h6l-6 8h6"/><path d="M14 4h6l-6 8h6"/></svg>Rest</h2>
     <div class="empty" id="rEmpty">Enter take off time and flight time</div>
+    <div id="viz" class="hidden">
+      <div class="vnow"><span id="vState"></span><span class="big" id="vLeft"></span></div>
+      <div class="vbar"><div class="vtag" id="vTag"></div><div class="vseg" id="vSeg"></div><div class="vcur" id="vCur"></div></div>
+      <div class="vmk" id="vMk"></div>
+      <div class="vax"><span id="vTo"></span><span id="vNext"></span><span id="vEta"></span></div>
+    </div>
     <table id="rTable" class="hidden"><tbody id="rBody"></tbody></table>
   </section>
 
@@ -158,13 +179,13 @@
     return +m[1] * 60 + +m[2];
   }
 
-  // Anchor take-off to a real date. Airborne now (take-off <= now < ETA): use that take-off.
+  // Anchor take-off to a real date. Airborne or landed within 6 h: use that take-off.
   // Otherwise (pre-flight): use the next take-off after now.
   function anchor(toMin, ftMin, now) {
     var d = new Date(now);
     var base = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) + toMin * 60000;
     var c = [base - 864e5, base, base + 864e5];
-    for (var i = 0; i < 3; i++) if (c[i] <= now && now < c[i] + ftMin * 60000) return c[i];
+    for (var i = 0; i < 3; i++) if (c[i] <= now && now < c[i] + (ftMin + 360) * 60000) return c[i];
     for (i = 0; i < 3; i++) if (c[i] > now) return c[i];
     return c[2];
   }
@@ -181,7 +202,7 @@
     $("aNote").textContent = "";
 
     if (!r) {
-      $("rTable").classList.add("hidden"); $("rEmpty").classList.remove("hidden");
+      $("rTable").classList.add("hidden"); $("viz").classList.add("hidden"); $("rEmpty").classList.remove("hidden");
       $("cList").innerHTML = ""; $("cEmpty").classList.remove("hidden");
       $("alarms").disabled = true;
       return;
@@ -190,19 +211,24 @@
     var ms = function (min) { return t0 + min * 60000; };
     state.plan = { r: r, ms: ms };
 
-    var rows = [
-      ["Rest start", z(ms(r.start)), ""],
-      ["Rest end", z(ms(r.end)), ""],
-      ["Total rest", dur(r.total), ""]
-    ];
+    var rows = [["Total rest", dur(r.total), z(ms(r.start)) + "–" + z(ms(r.end))]];
     r.rests.forEach(function (x, i) {
       rows.push([ORD[i] + " rest", dur(x.len), z(ms(x.start)) + "–" + z(ms(x.end))]);
     });
     rows.push(["ETA", z(ms(r.eta)), ""]);
     $("rBody").innerHTML = rows.map(function (w) {
-      return "<tr><td>" + w[0] + "</td><td class='sub'>" + w[2] + "</td><td class='v'>" + w[1] + "</td></tr>";
+      return "<tr><td>" + w[0] + "</td><td class='mid'>" + w[2] + "</td><td class='v'>" + w[1] + "</td></tr>";
     }).join("");
     $("rTable").classList.remove("hidden"); $("rEmpty").classList.add("hidden");
+    $("viz").classList.remove("hidden");
+    var span = ftMin;
+    var segs = [["pp", 30]].concat(r.rests.map(function (x, i) { return ["r" + (i + 1), x.len]; })).concat([["pp", 60]]);
+    $("vSeg").innerHTML = segs.map(function (g) {
+      return "<div style='width:" + (g[1] / span * 100) + "%;background:var(--" + g[0] + ")'></div>";
+    }).join("");
+    $("vTo").textContent = "T/O " + z(ms(toMin));
+    $("vEta").textContent = "ETA " + z(ms(r.eta));
+    state.plan.toMin = toMin;
 
     $("cList").innerHTML = r.rests.map(function (x, i) {
       var segs = LEADS.map(function (l) {
@@ -215,7 +241,47 @@
     }).join("");
     $("cEmpty").classList.add("hidden");
     $("alarms").disabled = false;
+    tick();
   }
+
+  // Live "now" view: state line, countdown, current-time line and tag, call markers, next call.
+  var ALARM = "<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg>";
+  function tick() {
+    var p = state.plan; if (!p) return;
+    var r = p.r, now = Date.now();
+    var t0 = p.ms(p.toMin), t1 = p.ms(r.eta), span = t1 - t0;
+    var mins = function (t) { return Math.ceil((t - now) / 60000); };
+    var st = "", left = "", i;
+    if (now < t0) { st = "1st rest starts " + z(p.ms(r.start)); left = "in " + dur(mins(p.ms(r.start))); }
+    else if (now < p.ms(r.start)) { st = "1st rest in"; left = dur(mins(p.ms(r.start))); }
+    else if (now < p.ms(r.end)) {
+      for (i = 0; i < r.rests.length; i++) if (now < p.ms(r.rests[i].end)) break;
+      st = ORD[i] + " rest now"; left = dur(mins(p.ms(r.rests[i].end))) + " left";
+    }
+    else if (now < t1) { st = "Rest complete"; left = "ETA in " + dur(mins(t1)); }
+    else { st = "Flight complete"; left = ""; }
+    $("vState").textContent = st; $("vLeft").textContent = left;
+
+    var inFlight = now >= t0 && now < t1;
+    var pct = Math.max(0, Math.min(100, (now - t0) / span * 100));
+    var cur = $("vCur"), tag = $("vTag");
+    cur.style.display = inFlight ? "" : "none";
+    cur.style.left = pct + "%";
+    tag.style.display = now < t1 ? "" : "none";
+    tag.style.left = pct + "%";
+    tag.style.transform = "translateX(-" + pct + "%)";
+    tag.textContent = z(now);
+
+    var next = null;
+    $("vMk").innerHTML = r.rests.map(function (x, k) {
+      var t = p.ms(x.end - state.leads[k]);
+      if (t > now && (next === null || t < next)) next = t;
+      return ALARM.replace("class='ic'", "class='ic' style='left:" + ((t - t0) / span * 100) + "%'");
+    }).join("");
+    $("vNext").innerHTML = next === null ? "No more calls" : ALARM + "Next call " + z(next);
+  }
+  setInterval(tick, 30000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
 
   function callList(now) {
     var p = state.plan, out = [], skipped = 0;
@@ -281,7 +347,7 @@
   try { saved = localStorage.getItem("crTheme"); } catch (e) {}
   setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day"));
 
-  window.CR = { calc: calc, anchor: anchor, callList: callList, state: state,
+  window.CR = { calc: calc, anchor: anchor, callList: callList, state: state, render: render, tick: tick,
     launch: function (url) { window.location.href = url; } };
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
