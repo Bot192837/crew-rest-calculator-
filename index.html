@@ -86,9 +86,7 @@
   .vcur { position: absolute; top: -4px; height: 34px; border-left: 2px solid var(--cur); margin-left: -1px; }
   .vtag { position: absolute; top: -26px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
     background: var(--cur); color: var(--tag-text); padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
-  .vmk { position: relative; height: 18px; margin-top: 4px; color: var(--call-ic); }
-  .vmk .ic { position: absolute; width: 15px; height: 15px; margin: 0; transform: translateX(-50%); }
-  .vax { display: flex; justify-content: center; font-size: 13px; font-weight: 600; color: var(--call); font-variant-numeric: tabular-nums; }
+  .vax { display: flex; justify-content: center; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--call); font-variant-numeric: tabular-nums; }
   .vax .ic { width: 14px; height: 14px; margin-left: 3px; }
 
   /* Rest table */
@@ -170,7 +168,6 @@
     <div class="empty" id="rEmpty">Enter take off time and flight time</div>
     <div id="viz" class="hidden">
       <div class="vbar"><div class="vtag" id="vTag"></div><div class="vseg" id="vSeg"></div><div class="vcur" id="vCur"></div></div>
-      <div class="vmk" id="vMk"></div>
       <div class="vax"><span id="vNext"></span></div>
     </div>
     <table id="rTable" class="hidden"><tbody id="rBody"></tbody></table>
@@ -323,14 +320,13 @@
     tag.textContent = z(now);
 
     var next = null;
-    $("vMk").innerHTML = r.rests.map(function (x, k) {
+    r.rests.forEach(function (x, k) {
       var t = p.ms(x.end - state.leads[k]);
       if (t > now && (next === null || t < next)) next = t;
       var tm = $("tm" + k), tb = $("tb" + k);
       if (tm) tm.textContent = t > now ? dur(Math.floor((t - now) / 60000)) : "Passed";
       if (tb) tb.disabled = t <= now;
-      return ALARM.replace("class='ic'", "class='ic' style='left:" + ((t - t0) / span * 100) + "%'");
-    }).join("");
+    });
     $("vNext").innerHTML = next === null ? "No more calls" : "Next call " + z(next) + ALARM;
   }
   setInterval(tick, 30000);
