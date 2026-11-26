@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crew Rest">
+<meta name="theme-color" content="#0e1116">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Crew Rest Calculator</title>
+<style>
+  :root {
+    --bg: #0e1116; --card: #171b22; --line: #2a303a; --text: #e8eaed;
+    --muted: #8b939e; --accent: #4da3ff; --accent-dim: #1d3a5c; --warn: #ff8a65;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif; }
+  body { padding: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 14px)
+    calc(env(safe-area-inset-bottom) + 20px) calc(env(safe-area-inset-left) + 14px); }
+  h1 { text-align: center; font-size: 20px; letter-spacing: 1px; margin: 4px 0 14px; font-weight: 700; }
+  .wrap { max-width: 520px; margin: 0 auto; display: grid; gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .card h2 { font-size: 13px; letter-spacing: .8px; color: var(--muted); margin: 0 0 10px; font-weight: 600; text-transform: uppercase; }
+  label.f { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; letter-spacing: .5px; }
+  .field { margin-bottom: 14px; }
+  .inbox { position: relative; }
+  .inbox input { width: 100%; font-size: 26px; font-variant-numeric: tabular-nums; padding: 10px 40px 10px 12px;
+    background: #0b0e12; color: var(--text); border: 1px solid var(--line); border-radius: 10px; outline: none; }
+  .inbox input:focus { border-color: var(--accent); }
+  .inbox .sfx { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--muted); pointer-events: none; }
+  .seg { display: flex; background: #0b0e12; border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 16px; padding: 10px 4px; border-radius: 8px; font-weight: 600; }
+  .seg button[aria-pressed="true"] { background: var(--accent-dim); color: #fff; }
+  .seg.sm button { font-size: 15px; padding: 8px 2px; }
+  .btns { display: flex; gap: 10px; }
+  .btn { flex: 1; border: 1px solid var(--line); background: #222833; color: var(--text); font-size: 16px; font-weight: 600;
+    padding: 12px; border-radius: 10px; letter-spacing: .5px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #04121f; }
+  .btn:disabled { opacity: .4; }
+  .err { color: var(--warn); font-size: 14px; min-height: 18px; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td { padding: 8px 0; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  td.v { text-align: right; font-weight: 600; font-size: 18px; }
+  td.sub { color: var(--muted); font-size: 14px; text-align: right; padding-left: 8px; white-space: nowrap; }
+  .call { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .call:last-of-type { border-bottom: 0; }
+  .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .call .ct { font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .call .ho { color: var(--muted); font-size: 14px; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .hidden { display: none !important; }
+  .empty { color: var(--muted); font-size: 15px; text-align: center; padding: 8px 0; }
+
+  /* iPad / wide landscape: two columns */
+  @media (min-width: 900px) and (orientation: landscape) {
+    body { font-size: 18px; }
+    h1 { font-size: 24px; margin-bottom: 18px; }
+    .wrap { max-width: 1100px; grid-template-columns: 1fr 1fr 1fr; align-items: start; gap: 16px; }
+    .card { padding: 18px; }
+    .inbox input { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+<h1>CREW REST CALCULATOR</h1>
+<div class="wrap">
+  <section class="card" id="inputs">
+    <div class="field">
+      <label class="f" for="to">TAKE OFF TIME UTC</label>
+      <div class="inbox"><input id="to" inputmode="numeric" maxlength="4" placeholder="HHMM" autocomplete="off"><span class="sfx">Z</span></div>
+    </div>
+    <div class="field">
+      <label class="f" for="ft">FLIGHT TIME</label>
+      <div class="inbox"><input id="ft" inputmode="numeric" maxlength="5" placeholder="HH:MM" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label class="f">OPERATION</label>
+      <div class="seg" id="op">
+        <button type="button" data-n="2" aria-pressed="true">Double</button>
+        <button type="button" data-n="3" aria-pressed="false">Augmented</button>
+      </div>
+    </div>
+    <div class="btns"><button type="button" class="btn" id="clear">CLEAR</button></div>
+    <div class="err" id="err"></div>
+  </section>
+
+  <section class="card" id="results">
+    <h2>Rest</h2>
+    <div class="empty" id="rEmpty">Enter take off time and flight time</div>
+    <table id="rTable" class="hidden"><tbody id="rBody"></tbody></table>
+  </section>
+
+  <section class="card" id="calls">
+    <h2>Calls</h2>
+    <div class="empty" id="cEmpty">No calls yet</div>
+    <div id="cList"></div>
+    <div class="btns" style="margin-top:12px"><button type="button" class="btn primary" id="alarms" disabled>SET ALARMS</button></div>
+    <div class="note" id="aNote"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var SHORTCUT = "Crew Rest Alarms";
+  var LEADS = [0, 5, 10, 15];
+  var ORD = ["1st", "2nd", "3rd"];
+  var $ = function (id) { return document.getElementById(id); };
+  var toEl = $("to"), ftEl = $("ft"), opEl = $("op");
+  var state = { n: 2, leads: [0, 0, 0], plan: null };
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function z(ms) { var d = new Date(ms); return pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + "Z"; }
+  function dur(min) { return Math.floor(min / 60) + "h " + pad(min % 60) + "m"; }
+
+  // Pure calculation. toMin = take-off minutes after 0000Z, ftMin = flight minutes, n = number of rests.
+  function calc(toMin, ftMin, n) {
+    var total = ftMin - 90;
+    if (total <= 0) return { error: "No rest: flight time must be more than 1h 30m" };
+    var each = Math.floor(total / n), rests = [], s = toMin + 30;
+    for (var i = 0; i < n; i++) {
+      var len = i === n - 1 ? total - each * (n - 1) : each;
+      rests.push({ start: s, end: s + len, len: len });
+      s += len;
+    }
+    return { start: toMin + 30, end: toMin + 30 + total, total: total, rests: rests, eta: toMin + ftMin };
+  }
+
+  function parseTO(v) {
+    if (!/^\d{4}$/.test(v)) return null;
+    var h = +v.slice(0, 2), m = +v.slice(2);
+    return h < 24 && m < 60 ? h * 60 + m : null;
+  }
+  function parseFT(v) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(v);
+    if (!m || +m[2] > 59) return null;
+    return +m[1] * 60 + +m[2];
+  }
+
+  // Anchor take-off to a real date. Airborne now (take-off <= now < ETA): use that take-off.
+  // Otherwise (pre-flight): use the next take-off after now.
+  function anchor(toMin, ftMin, now) {
+    var d = new Date(now);
+    var base = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) + toMin * 60000;
+    var c = [base - 864e5, base, base + 864e5];
+    for (var i = 0; i < 3; i++) if (c[i] <= now && now < c[i] + ftMin * 60000) return c[i];
+    for (i = 0; i < 3; i++) if (c[i] > now) return c[i];
+    return c[2];
+  }
+
+  function render() {
+    var toV = toEl.value, ftV = ftEl.value, err = "";
+    var toMin = parseTO(toV), ftMin = parseFT(ftV);
+    state.plan = null;
+    if (toV.length === 4 && toMin === null) err = "Take off time: use HHMM, 0000 to 2359";
+    else if (ftV.length === 5 && ftMin === null) err = "Flight time: use HH:MM, minutes 00 to 59";
+    var r = (toMin !== null && ftMin !== null) ? calc(toMin, ftMin, state.n) : null;
+    if (r && r.error) { err = r.error; r = null; }
+    $("err").textContent = err;
+    $("aNote").textContent = "";
+
+    if (!r) {
+      $("rTable").classList.add("hidden"); $("rEmpty").classList.remove("hidden");
+      $("cList").innerHTML = ""; $("cEmpty").classList.remove("hidden");
+      $("alarms").disabled = true;
+      return;
+    }
+    var t0 = anchor(toMin, ftMin, Date.now()) - toMin * 60000; // 0000Z of take-off day
+    var ms = function (min) { return t0 + min * 60000; };
+    state.plan = { r: r, ms: ms };
+
+    var rows = [
+      ["Rest start", z(ms(r.start)), ""],
+      ["Rest end", z(ms(r.end)), ""],
+      ["Total rest", dur(r.total), ""]
+    ];
+    r.rests.forEach(function (x, i) {
+      rows.push([ORD[i] + " rest", dur(x.len), z(ms(x.start)) + "–" + z(ms(x.end))]);
+    });
+    rows.push(["ETA", z(ms(r.eta)), ""]);
+    $("rBody").innerHTML = rows.map(function (w) {
+      return "<tr><td>" + w[0] + "</td><td class='sub'>" + w[2] + "</td><td class='v'>" + w[1] + "</td></tr>";
+    }).join("");
+    $("rTable").classList.remove("hidden"); $("rEmpty").classList.add("hidden");
+
+    $("cList").innerHTML = r.rests.map(function (x, i) {
+      var segs = LEADS.map(function (l) {
+        return "<button type='button' data-i='" + i + "' data-l='" + l + "' aria-pressed='" + (state.leads[i] === l) + "'>" +
+          (l === 0 ? "At" : "−" + l) + "</button>";
+      }).join("");
+      return "<div class='call' data-i='" + i + "'><div class='top'><span>End " + ORD[i] + " rest <span class='ho'>" +
+        z(ms(x.end)) + "</span></span><span class='ct' id='ct" + i + "'>" + z(ms(x.end - state.leads[i])) +
+        "</span></div><div class='seg sm'>" + segs + "</div></div>";
+    }).join("");
+    $("cEmpty").classList.add("hidden");
+    $("alarms").disabled = false;
+  }
+
+  function callList(now) {
+    var p = state.plan, out = [], skipped = 0;
+    p.r.rests.forEach(function (x, i) {
+      var t = p.ms(x.end - state.leads[i]);
+      var sec = Math.round((t - now) / 1000);
+      if (sec <= 0) { skipped++; return; }
+      out.push({ sec: sec, label: "End " + ORD[i] + " rest " + z(t) });
+    });
+    return { calls: out, skipped: skipped };
+  }
+
+  // Input formatting
+  toEl.addEventListener("input", function () { toEl.value = toEl.value.replace(/\D/g, "").slice(0, 4); render(); });
+  ftEl.addEventListener("input", function (e) {
+    var d = ftEl.value.replace(/\D/g, "").slice(0, 4);
+    if (e.inputType === "deleteContentBackward" && d.length === 2) ftEl.value = d;
+    else ftEl.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : (d.length === 2 ? d + ":" : d);
+    render();
+  });
+  opEl.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    state.n = +b.dataset.n;
+    [].forEach.call(opEl.children, function (c) { c.setAttribute("aria-pressed", c === b); });
+    render();
+  });
+  $("cList").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    state.leads[+b.dataset.i] = +b.dataset.l;
+    render();
+  });
+  $("clear").addEventListener("click", function () {
+    toEl.value = ""; ftEl.value = ""; state.n = 2; state.leads = [0, 0, 0];
+    [].forEach.call(opEl.children, function (c, i) { c.setAttribute("aria-pressed", i === 0); });
+    render();
+  });
+  $("alarms").addEventListener("click", function () {
+    if (!state.plan) return;
+    var res = callList(Date.now());
+    if (!res.calls.length) { $("aNote").textContent = "All call times have passed. No alarms set."; return; }
+    var text = res.calls.map(function (c) { return c.sec + "|" + c.label; }).join("\n");
+    var url = "shortcuts://run-shortcut?name=" + encodeURIComponent(SHORTCUT) + "&input=text&text=" + encodeURIComponent(text);
+    $("aNote").textContent = "Sent " + res.calls.length + " alarm" + (res.calls.length > 1 ? "s" : "") + " to Shortcuts" +
+      (res.skipped ? " (" + res.skipped + " skipped: time passed)" : "") + ".";
+    CR.launch(url);
+  });
+
+  window.CR = { calc: calc, anchor: anchor, callList: callList, state: state,
+    launch: function (url) { window.location.href = url; } };
+
+  if ("serviceWorker" in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register("sw.js");
+  }
+  render();
+})();
+</script>
+</body>
+</html>
