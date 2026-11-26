@@ -22,6 +22,7 @@
     --r1t: #042c53; --r2t: #ffffff; --r3t: #ffffff;
     --now-bg: #0b57d0; --now-text: #ffffff; --now-sub: #d6e6fb; --hl: #e6f1fb;
     --shadow: 0 1px 2px rgba(15,30,50,.06), 0 4px 16px rgba(15,30,50,.07); --cardline: transparent;
+    --call: #9a5b00; --call-ic: #c27400;
   }
   [data-theme="night"] {
     --bg: #0f1216; --card: #181c22; --line: #2b3139; --text: #e2e6eb; --muted: #99a2ad;
@@ -31,6 +32,7 @@
     --r1t: #0d2747; --r2t: #ffffff; --r3t: #eaf1fb;
     --now-bg: #2457a8; --now-text: #f4f7fb; --now-sub: #cfe0f7; --hl: #1f2b3d;
     --shadow: none; --cardline: #2b3139;
+    --call: #f2b85a; --call-ic: #e9a93f;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
@@ -84,9 +86,9 @@
   .vcur { position: absolute; top: -4px; height: 34px; border-left: 2px solid var(--cur); margin-left: -1px; }
   .vtag { position: absolute; top: -26px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
     background: var(--cur); color: var(--tag-text); padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
-  .vmk { position: relative; height: 18px; margin-top: 4px; color: var(--muted); }
+  .vmk { position: relative; height: 18px; margin-top: 4px; color: var(--call-ic); }
   .vmk .ic { position: absolute; width: 15px; height: 15px; margin: 0; transform: translateX(-50%); }
-  .vax { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .vax { display: flex; justify-content: center; font-size: 13px; font-weight: 600; color: var(--call); font-variant-numeric: tabular-nums; }
   .vax .ic { width: 14px; height: 14px; margin-left: 3px; }
 
   /* Rest table */
@@ -106,13 +108,13 @@
   .call { padding: 12px 0; border-bottom: 1px solid var(--line); }
   .call:last-of-type { border-bottom: 0; padding-bottom: 0; }
   .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-  .call .ct { font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .call .ct { font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; color: var(--call); }
+  #calls .ic { color: var(--call-ic); }
   .call .ho { color: var(--muted); font-size: 14px; }
   .call .tm { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: 15px; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
   .call .tm b { color: var(--text); font-weight: 700; }
-  .tbtn { border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; font-weight: 700;
+  .tbtn { border: 1px solid var(--call-ic); background: transparent; color: var(--call); font-size: 13px; font-weight: 700;
     letter-spacing: .5px; padding: 7px 12px; border-radius: 10px; white-space: nowrap; }
-  [data-theme="night"] .tbtn { color: #9cc0f2; border-color: #3f6fb5; }
   .tbtn:disabled { opacity: .4; }
   .hidden { display: none !important; }
   .empty { color: var(--muted); font-size: 15px; text-align: center; padding: 8px 0; }
@@ -133,7 +135,7 @@
 </head>
 <body>
 <header>
-  <h1>CREW REST CALCULATOR</h1>
+  <h1>CREW REST CALCULATOR<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M8 8a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M8 14v.01"/><path d="M12 14v.01"/><path d="M16 14v.01"/><path d="M8 17v.01"/><path d="M12 17v.01"/><path d="M16 17v.01"/></svg></h1>
   <button type="button" class="theme" id="theme"></button>
 </header>
 <div class="wrap">
@@ -169,7 +171,7 @@
     <div id="viz" class="hidden">
       <div class="vbar"><div class="vtag" id="vTag"></div><div class="vseg" id="vSeg"></div><div class="vcur" id="vCur"></div></div>
       <div class="vmk" id="vMk"></div>
-      <div class="vax"><span id="vTo"></span><span id="vNext"></span><span id="vEta"></span></div>
+      <div class="vax"><span id="vNext"></span></div>
     </div>
     <table id="rTable" class="hidden"><tbody id="rBody"></tbody></table>
   </section>
@@ -261,7 +263,6 @@
       rows.push("<tr data-i='" + i + "'><td class='k'><span class='sw' style='background:var(--r" + (i + 1) + ")'></span>" + ORD[i] +
         " rest</td><td class='mid'>" + z(ms(x.start)) + "–" + z(ms(x.end)) + "</td><td class='v'>" + dur(x.len) + "</td></tr>");
     });
-    rows.push("<tr><td class='k'><span class='sw' style='background:transparent'></span>ETA</td><td class='mid'></td><td class='v'>" + z(ms(r.eta)) + "</td></tr>");
     $("rBody").innerHTML = rows.join("");
     $("rTable").classList.remove("hidden"); $("rEmpty").classList.add("hidden");
 
@@ -271,8 +272,6 @@
     $("vSeg").innerHTML = segs.map(function (g) {
       return "<div style='width:" + (g[1] / ftMin * 100) + "%;background:var(--" + g[0] + ");color:var(--" + g[0] + "t)'>" + g[2] + "</div>";
     }).join("");
-    $("vTo").textContent = "T/O " + z(ms(toMin));
-    $("vEta").textContent = "ETA " + z(ms(r.eta));
 
     $("cList").innerHTML = r.rests.map(function (x, i) {
       var segs = LEADS.map(function (l) {
