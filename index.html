@@ -12,25 +12,25 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Crew Rest Calculator</title>
 <style>
-  /* Day: positive polarity (dark on light) for bright flight deck. Night: same blue scheme,
-     dimmed on dark navy (moderate contrast, less glare). */
+  /* Day: positive polarity (dark on light) for bright flight deck. Night: mirrors day - neutral
+     surfaces with the same blue accents, dimmed (moderate contrast, less glare). */
   :root, [data-theme="day"] {
     --bg: #eef2f6; --card: #ffffff; --line: #d5dce4; --text: #0b0f14; --muted: #4f5b67;
     --input: #f4f6f8; --btn: #e8edf2; --accent: #0b57d0; --on-accent: #ffffff;
     --seg-on: #0b57d0; --seg-on-text: #ffffff; --warn: #b3261e;
-    --r1: #85b7eb; --r2: #378add; --r3: #185fa5; --pp: #d3dae2; --cur: #0b0f14; --tag-text: #ffffff;
+    --r1: #85b7eb; --r2: #2a74c6; --r3: #185fa5; --pp: #d3dae2; --cur: #0b0f14; --tag-text: #ffffff;
     --r1t: #042c53; --r2t: #ffffff; --r3t: #ffffff;
     --now-bg: #0b57d0; --now-text: #ffffff; --now-sub: #d6e6fb; --hl: #e6f1fb;
     --shadow: 0 1px 2px rgba(15,30,50,.06), 0 4px 16px rgba(15,30,50,.07); --cardline: transparent;
   }
   [data-theme="night"] {
-    --bg: #0a0f1a; --card: #111827; --line: #243247; --text: #d5deea; --muted: #8e9cb1;
-    --input: #0a0f1a; --btn: #1a2436; --accent: #1f4f96; --on-accent: #e6eefb;
-    --seg-on: #1f4f96; --seg-on-text: #e6eefb; --warn: #f08a7a;
-    --r1: #4a78b8; --r2: #345f9c; --r3: #22487e; --pp: #223047; --cur: #e6eefb; --tag-text: #0a0f1a;
-    --r1t: #eef3fb; --r2t: #e6eefb; --r3t: #dce6f5;
-    --now-bg: #173a70; --now-text: #e6eefb; --now-sub: #b7c8e2; --hl: #18263d;
-    --shadow: none; --cardline: #243247;
+    --bg: #0f1216; --card: #181c22; --line: #2b3139; --text: #e2e6eb; --muted: #99a2ad;
+    --input: #0f1216; --btn: #222830; --accent: #2f6fd0; --on-accent: #f1f5fb;
+    --seg-on: #2f6fd0; --seg-on-text: #f1f5fb; --warn: #f08a7a;
+    --r1: #8bb8ea; --r2: #3478c8; --r3: #2a62ad; --pp: #2b3139; --cur: #f1f5fb; --tag-text: #0f1216;
+    --r1t: #0d2747; --r2t: #ffffff; --r3t: #eaf1fb;
+    --now-bg: #2457a8; --now-text: #f4f7fb; --now-sub: #cfe0f7; --hl: #1f2b3d;
+    --shadow: none; --cardline: #2b3139;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
@@ -242,6 +242,7 @@
     var r = (toMin !== null && ftMin !== null) ? calc(toMin, ftMin, state.n) : null;
     if (r && r.error) { err = r.error; r = null; }
     $("err").textContent = err;
+    save();
 
     if (!r) {
       $("rTable").classList.add("hidden"); $("viz").classList.add("hidden"); $("now").classList.add("hidden");
@@ -372,13 +373,27 @@
     CR.launch("shortcuts://run-shortcut?name=" + encodeURIComponent(SHORTCUT) + "&input=text&text=" + sec);
   }
 
+  // Remember inputs on this device, so a closed or reloaded app keeps the flight.
+  function save() {
+    try { localStorage.setItem("crState", JSON.stringify({ to: toEl.value, ft: ftEl.value, n: state.n, leads: state.leads })); } catch (e) {}
+  }
+  function restore() {
+    try {
+      var d = JSON.parse(localStorage.getItem("crState") || "null"); if (!d) return;
+      toEl.value = d.to || ""; ftEl.value = d.ft || "";
+      state.n = d.n === 3 ? 3 : 2;
+      if (Array.isArray(d.leads)) state.leads = d.leads.map(function (l) { return LEADS.indexOf(l) >= 0 ? l : 0; }).concat([0, 0, 0]).slice(0, 3);
+      [].forEach.call(opEl.children, function (c) { c.setAttribute("aria-pressed", +c.dataset.n === state.n); });
+    } catch (e) {}
+  }
+
   // Day / night colours. Saved on this device; first launch follows the phone's dark setting.
   var themeBtn = $("theme");
   function setTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
     themeBtn.innerHTML = t === "night" ? SUN : MOON;
     themeBtn.setAttribute("aria-label", t === "night" ? "Switch to day colours" : "Switch to night colours");
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0a0f1a" : "#eef2f6");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0f1216" : "#eef2f6");
     try { localStorage.setItem("crTheme", t); } catch (e) {}
   }
   themeBtn.addEventListener("click", function () {
@@ -394,6 +409,7 @@
   if ("serviceWorker" in navigator && window.isSecureContext) {
     navigator.serviceWorker.register("sw.js");
   }
+  restore();
   render();
 })();
 </script>
