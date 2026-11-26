@@ -48,6 +48,27 @@
     display: flex; align-items: center; justify-content: center; padding: 0; }
   .theme .ic { margin: 0; width: 20px; height: 20px; }
 
+  /* Kip the koala: blinks and smiles; looks at his watch 10 min before a call; says CALL! until tapped */
+  .kip { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 0;
+    border: 0; background: transparent; z-index: 5; -webkit-appearance: none; appearance: none; overflow: visible; }
+  .kip svg { position: absolute; left: 0; top: 0; width: 44px; height: 44px; display: block; overflow: visible; }
+  .k-eyes { transform-box: fill-box; transform-origin: center; transition: transform .09s; }
+  .kip.blink .k-eyes { transform: scaleY(.12); }
+  .k-m2 { display: none; } .kip.smile .k-m1 { display: none; } .kip.smile .k-m2 { display: inline; }
+  .k-arm { opacity: 0; transform: translateY(8px); transition: opacity .3s, transform .3s; }
+  .kip.k-watch .k-arm { opacity: 1; transform: none; animation: kipWrist 2.4s ease-in-out infinite; }
+  .kip.k-watch .k-eyes { transform: translate(-2px, 2px); }
+  .kbub { position: absolute; left: 30px; top: 40px; background: #f2b85a; color: #3b2300; font-size: 13px; font-weight: 800;
+    letter-spacing: .5px; padding: 3px 8px; border-radius: 9px; white-space: nowrap; display: none; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  .kbub::before { content: ""; position: absolute; left: 6px; top: -6px; border: 6px solid transparent; border-top: 0; border-bottom-color: #f2b85a; }
+  .kip.k-call .kbub { display: block; animation: kipBounce 1.2s ease-in-out infinite; }
+  .kip.k-call .k-m1 { display: none; } .kip.k-call .k-m2 { display: inline; }
+  @keyframes kipWrist { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+  @keyframes kipBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .kip .k-eyes, .k-arm { transition: none; } .kip.k-watch .k-arm, .kip.k-call .kbub { animation: none; }
+  }
+
   .wrap { max-width: 520px; margin: 0 auto; display: grid; gap: 16px; }
   .card { background: var(--card); border: 1px solid var(--cardline); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
   .card h2 { font-size: 12px; letter-spacing: 1px; color: var(--muted); margin: 0 0 12px; font-weight: 600; text-transform: uppercase; }
@@ -133,6 +154,22 @@
 </head>
 <body>
 <header>
+  <button type="button" id="kip" class="kip" aria-label="Kip the koala">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="14" cy="27" r="11" fill="#8e95a0"/><circle cx="14" cy="27" r="6" fill="#f3c6cf"/>
+      <circle cx="50" cy="27" r="11" fill="#8e95a0"/><circle cx="50" cy="27" r="6" fill="#f3c6cf"/>
+      <ellipse cx="32" cy="37" rx="20" ry="18" fill="#a7aeb8"/>
+      <g class="k-eyes"><ellipse cx="25" cy="35" rx="2.3" ry="2.7" fill="#2b2f36"/><ellipse cx="39" cy="35" rx="2.3" ry="2.7" fill="#2b2f36"/></g>
+      <ellipse cx="32" cy="43" rx="5" ry="6" fill="#2b2f36"/>
+      <path class="k-m1" d="M28.5 51.5q3.5 2.2 7 0" stroke="#2b2f36" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path class="k-m2" d="M27 50.5q5 5 10 0" stroke="#2b2f36" stroke-width="1.8" fill="#e86f7f" stroke-linecap="round"/>
+      <path d="M13 25q19-17 38 0l-2 4h-34z" fill="#1d3a6b"/><rect x="13" y="26" width="38" height="4.5" rx="2" fill="#0f2547"/>
+      <circle cx="32" cy="18.5" r="2.6" fill="#f2b85a"/>
+      <g class="k-arm"><path d="M4 66q1-13 13-17" stroke="#8e95a0" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="17.5" cy="49" r="3.6" fill="#f2b85a" stroke="#2b2f36" stroke-width="1.2"/></g>
+    </svg>
+    <span class="kbub">CALL!</span>
+  </button>
   <h1>CREW REST CALCULATOR<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M8 8a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1z"/><path d="M8 14v.01"/><path d="M12 14v.01"/><path d="M16 14v.01"/><path d="M8 17v.01"/><path d="M12 17v.01"/><path d="M16 17v.01"/></svg></h1>
   <button type="button" class="theme" id="theme"></button>
 </header>
@@ -246,6 +283,7 @@
     if (r && r.error) { err = r.error; r = null; }
     $("err").textContent = err;
     save();
+    if (window.CR && CR.kipState) setTimeout(CR.kipState, 0);
 
     if (!r) {
       $("rTable").classList.add("hidden"); $("viz").classList.add("hidden"); $("now").classList.add("hidden");
@@ -333,8 +371,50 @@
       if (tb) tb.disabled = t <= now;
     });
     $("vNext").innerHTML = next === null ? "No more calls" : "Next call " + z(next) + ALARM;
+    if (window.CR && CR.kipState) CR.kipState();
   }
   setInterval(tick, 30000);
+
+  // Kip: idle blink/smile; watch glance from 10 min before the next call; CALL! from the call time until tapped.
+  var kip = $("kip"), reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  var acked = [];
+  try { acked = JSON.parse(localStorage.getItem("crAck") || "[]"); } catch (e) {}
+  function callTimes() {
+    var p = state.plan; if (!p) return [];
+    return p.r.rests.map(function (x, k) { return p.ms(x.end - state.leads[k]); });
+  }
+  function kipState() {
+    var now = Date.now(), ts = callTimes(), due = null, soon = false;
+    ts.forEach(function (t) {
+      // A call is due from its time until tapped (only calls reached in the last 60 min, so entering a flight late doesn't fire old calls)
+      if (t <= now && now - t < 3600000 && acked.indexOf(t) < 0 && (due === null || t > due)) due = t;
+      if (t > now && t - now <= 600000) soon = true;
+    });
+    kip.dataset.due = due === null ? "" : due;
+    kip.classList.toggle("k-call", due !== null);
+    kip.classList.toggle("k-watch", due === null && soon);
+    kip.setAttribute("aria-label", due !== null ? "Kip: call now. Tap to dismiss" : "Kip the koala");
+  }
+  kip.addEventListener("click", function () {
+    if (kip.dataset.due) {
+      acked.push(+kip.dataset.due); acked = acked.slice(-20);
+      try { localStorage.setItem("crAck", JSON.stringify(acked)); } catch (e) {}
+      kipState();
+    }
+    smile(1500);
+  });
+  function smile(ms) { kip.classList.add("smile"); setTimeout(function () { kip.classList.remove("smile"); }, ms); }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  (function blinkLoop() {
+    setTimeout(function () {
+      if (!reduce.matches && !document.hidden) { kip.classList.add("blink"); setTimeout(function () { kip.classList.remove("blink"); }, 140); }
+      blinkLoop();
+    }, rnd(4000, 7000));
+  })();
+  (function smileLoop() {
+    setTimeout(function () { if (!reduce.matches && !document.hidden) smile(2000); smileLoop(); }, rnd(15000, 25000));
+  })();
+  setInterval(kipState, 5000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
 
   // HH:MM inputs: colon auto-inserted while typing.
@@ -407,7 +487,7 @@
   try { saved = localStorage.getItem("crTheme"); } catch (e) {}
   setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day"));
 
-  window.CR = { calc: calc, anchor: anchor, state: state, render: render, tick: tick,
+  window.CR = { calc: calc, anchor: anchor, state: state, render: render, tick: tick, kipState: kipState,
     launch: function (url) { window.location.href = url; } };
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
