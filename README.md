@@ -25,10 +25,19 @@ After an update, open the app once with signal to get the new version.
 
 ## Set a call
 1. Choose **At / −5 / −10 / −15** for the call.
-2. Read the **Clock timer** value under the call (time from now until the call).
-3. Open **Clock → Timers** and set that time. Start it.
+2. Tap **START TIMER**. The iOS Clock timer starts, set exactly to the call time.
+3. Swipe back to the app.
 
-The timer value updates every 30 s. It rounds down, so the timer rings at the call time or up to 1 min early, never late. A timer counts down in real time, so a phone time zone change does not affect it. iOS runs one Clock timer at a time: set the next call's timer, then set the following one after it rings.
+Backup: if the Shortcut is missing, read the **Clock timer** value under the call and set it in **Clock → Timers** by hand. That value rounds down, so it rings on time or up to 1 min early.
+
+iOS runs one Clock timer at a time: start the next call's timer, then start the following one after it rings.
+
+## Set up the "Crew Rest Timer" Shortcut (do once, 1 action)
+1. Open **Shortcuts** → tap **+** → name it exactly `Crew Rest Timer`.
+2. Add the action **Start Timer**.
+3. Tap the duration → choose **Shortcut Input** → set the unit to **seconds**.
+
+Test it on the ground: enter a take-off time a few minutes ago (UTC) and a flight time of 02:00, then tap **START TIMER**. Check **Clock → Timers**. Also check what happens when a timer is already running.
 
 ## Watch-outs
 - After a call time passes, the app shows **Passed** for it.

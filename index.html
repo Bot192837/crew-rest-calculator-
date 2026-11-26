@@ -12,95 +12,137 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Crew Rest Calculator</title>
 <style>
-  /* Day: positive polarity (dark on light) for bright flight deck. Night: negative polarity,
-     dark navy background, soft blue-white text, same blue scheme as day, dimmed (moderate contrast, less glare). */
+  /* Day: positive polarity (dark on light) for bright flight deck. Night: same blue scheme,
+     dimmed on dark navy (moderate contrast, less glare). */
   :root, [data-theme="day"] {
-    --bg: #e9edf1; --card: #ffffff; --line: #c3ccd5; --text: #0b0f14; --muted: #46515c;
-    --input: #f4f6f8; --btn: #e3e8ee; --accent: #0b57d0; --on-accent: #ffffff;
+    --bg: #eef2f6; --card: #ffffff; --line: #d5dce4; --text: #0b0f14; --muted: #4f5b67;
+    --input: #f4f6f8; --btn: #e8edf2; --accent: #0b57d0; --on-accent: #ffffff;
     --seg-on: #0b57d0; --seg-on-text: #ffffff; --warn: #b3261e;
-    --r1: #85b7eb; --r2: #378add; --r3: #185fa5; --pp: #cfd6de; --cur: #0b0f14; --tag-text: #ffffff;
+    --r1: #85b7eb; --r2: #378add; --r3: #185fa5; --pp: #d3dae2; --cur: #0b0f14; --tag-text: #ffffff;
+    --r1t: #042c53; --r2t: #ffffff; --r3t: #ffffff;
+    --now-bg: #0b57d0; --now-text: #ffffff; --now-sub: #d6e6fb; --hl: #e6f1fb;
+    --shadow: 0 1px 2px rgba(15,30,50,.06), 0 4px 16px rgba(15,30,50,.07); --cardline: transparent;
   }
   [data-theme="night"] {
     --bg: #0a0f1a; --card: #111827; --line: #243247; --text: #d5deea; --muted: #8e9cb1;
     --input: #0a0f1a; --btn: #1a2436; --accent: #1f4f96; --on-accent: #e6eefb;
     --seg-on: #1f4f96; --seg-on-text: #e6eefb; --warn: #f08a7a;
     --r1: #4a78b8; --r2: #345f9c; --r3: #22487e; --pp: #223047; --cur: #e6eefb; --tag-text: #0a0f1a;
+    --r1t: #eef3fb; --r2t: #e6eefb; --r3t: #dce6f5;
+    --now-bg: #173a70; --now-text: #e6eefb; --now-sub: #b7c8e2; --hl: #18263d;
+    --shadow: none; --cardline: #243247;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
     font: 17px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif; }
   body { padding: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 14px)
-    calc(env(safe-area-inset-bottom) + 20px) calc(env(safe-area-inset-left) + 14px); }
-  header { position: relative; padding: 0 62px; }
-  .theme { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 58px; padding: 6px 0;
-    font-size: 12px; font-weight: 700; letter-spacing: .5px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--btn); color: var(--text); }
-  h1 { text-align: center; font-size: 17px; letter-spacing: .5px; white-space: nowrap; margin: 4px 0 14px; font-weight: 700; }
-  .wrap { max-width: 520px; margin: 0 auto; display: grid; gap: 12px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-  .card h2 { font-size: 13px; letter-spacing: .8px; color: var(--muted); margin: 0 0 10px; font-weight: 600; text-transform: uppercase; }
-  .ic { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.28em; margin-left: 6px; flex: none; }
-  label.f { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; letter-spacing: .5px; }
-  .field { margin-bottom: 14px; }
+    calc(env(safe-area-inset-bottom) + 24px) calc(env(safe-area-inset-left) + 14px); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  header { position: relative; padding: 0 52px; margin-bottom: 16px; }
+  h1 { text-align: center; font-size: 17px; letter-spacing: .5px; white-space: nowrap; margin: 6px 0; font-weight: 700; }
+  .theme { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--cardline); background: var(--card); color: var(--text); box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center; padding: 0; }
+  .theme .ic { margin: 0; width: 20px; height: 20px; }
+
+  .wrap { max-width: 520px; margin: 0 auto; display: grid; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--cardline); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+  .card h2 { font-size: 12px; letter-spacing: 1px; color: var(--muted); margin: 0 0 12px; font-weight: 600; text-transform: uppercase; }
+  .ic { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    vertical-align: -0.28em; margin-left: 6px; flex: none; }
+
+  /* Now card */
+  .now { background: var(--now-bg); color: var(--now-text); border-radius: 18px; padding: 16px; text-align: center; box-shadow: var(--shadow); }
+  .now .l1 { font-size: 15px; color: var(--now-sub); font-weight: 600; letter-spacing: .3px; }
+  .now .l2 { font-size: 34px; font-weight: 800; line-height: 1.15; margin: 2px 0; }
+  .now .l3 { font-size: 15px; color: var(--now-sub); }
+
+  /* Inputs */
+  label.f { display: block; font-size: 12px; color: var(--muted); margin: 0 0 6px; letter-spacing: 1px; font-weight: 600; }
+  .field { margin-bottom: 16px; }
   .inbox { position: relative; }
-  .inbox input { width: 100%; font-size: 26px; font-variant-numeric: tabular-nums; padding: 10px 40px 10px 12px;
-    background: var(--input); color: var(--text); border: 1px solid var(--line); border-radius: 10px; outline: none; }
+  .inbox input { width: 100%; font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; padding: 10px 40px 10px 14px;
+    background: var(--input); color: var(--text); border: 1px solid var(--line); border-radius: 12px; outline: none; }
   .inbox input:focus { border-color: var(--accent); }
   .inbox .sfx { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--muted); pointer-events: none; }
-  .seg { display: flex; background: var(--input); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
-  .seg button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 16px; padding: 10px 4px; border-radius: 8px; font-weight: 600; }
+  .seg { display: flex; background: var(--input); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+  .seg button { flex: 1; border: 0; background: transparent; color: var(--muted); font-size: 16px; padding: 10px 4px; border-radius: 9px; font-weight: 600; }
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--seg-on-text); }
   [data-theme="night"] .seg button[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px #5d8fd6; }
   .seg.sm button { font-size: 15px; padding: 8px 2px; }
   .btns { display: flex; gap: 10px; }
   .btn { flex: 1; border: 1px solid var(--line); background: var(--btn); color: var(--text); font-size: 16px; font-weight: 600;
-    padding: 12px; border-radius: 10px; letter-spacing: .5px; }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-  .btn:disabled { opacity: .45; }
+    padding: 12px; border-radius: 12px; letter-spacing: .5px; }
   .err { color: var(--warn); font-size: 14px; min-height: 18px; margin-top: 8px; }
-  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  td { padding: 8px 0; border-bottom: 1px solid var(--line); }
-  tr:last-child td { border-bottom: 0; }
-  td.v { text-align: right; font-weight: 600; font-size: 18px; }
-  td.mid { text-align: center; white-space: nowrap; padding: 8px 6px; }
-  #viz { margin-bottom: 14px; }
-  .vnow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 30px; }
-  .vnow .big { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Rest bar */
+  #viz { margin: 26px 0 14px; }
   .vbar { position: relative; }
-  .vseg { display: flex; height: 18px; border-radius: 9px; overflow: hidden; }
-  .vseg div { height: 100%; }
-  .vcur { position: absolute; top: -4px; height: 26px; border-left: 2px solid var(--cur); margin-left: -1px; }
+  .vseg { display: flex; height: 26px; border-radius: 13px; overflow: hidden; }
+  .vseg div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; overflow: hidden; }
+  .vcur { position: absolute; top: -4px; height: 34px; border-left: 2px solid var(--cur); margin-left: -1px; }
   .vtag { position: absolute; top: -26px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
-    background: var(--cur); color: var(--tag-text); padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
-  .vmk { position: relative; height: 18px; margin-top: 3px; color: var(--muted); }
+    background: var(--cur); color: var(--tag-text); padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+  .vmk { position: relative; height: 18px; margin-top: 4px; color: var(--muted); }
   .vmk .ic { position: absolute; width: 15px; height: 15px; margin: 0; transform: translateX(-50%); }
   .vax { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .vax .ic { width: 14px; height: 14px; margin-left: 3px; }
-  .call { padding: 10px 0; border-bottom: 1px solid var(--line); }
-  .call:last-of-type { border-bottom: 0; }
+
+  /* Rest table */
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td { padding: 9px 0; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  tr.cur td { background: var(--hl); }
+  tr.cur td:first-child { border-radius: 10px 0 0 10px; font-weight: 700; }
+  tr.cur td:last-child { border-radius: 0 10px 10px 0; }
+  td.k { white-space: nowrap; padding-left: 6px; }
+  td.mid { text-align: center; white-space: nowrap; padding: 9px 6px; color: var(--muted); }
+  td.v { text-align: right; font-weight: 700; font-size: 19px; padding-right: 6px; white-space: nowrap; }
+  .sw { display: inline-block; width: 6px; height: 20px; border-radius: 3px; vertical-align: -4px; margin-right: 10px; }
+  .sw.tot { background: linear-gradient(var(--r1), var(--r3)); }
+
+  /* Calls */
+  .call { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .call:last-of-type { border-bottom: 0; padding-bottom: 0; }
   .call .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-  .call .tm { display: flex; justify-content: space-between; color: var(--muted); font-size: 15px; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
-  .call .tm .tv { font-weight: 700; color: var(--text); }
-  .call .ct { font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .call .ct { font-weight: 800; font-size: 24px; font-variant-numeric: tabular-nums; }
   .call .ho { color: var(--muted); font-size: 14px; }
+  .call .tm { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: 15px; margin-bottom: 10px; font-variant-numeric: tabular-nums; }
+  .call .tm b { color: var(--text); font-weight: 700; }
+  .tbtn { border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; font-weight: 700;
+    letter-spacing: .5px; padding: 7px 12px; border-radius: 10px; white-space: nowrap; }
+  [data-theme="night"] .tbtn { color: #9cc0f2; border-color: #3f6fb5; }
+  .tbtn:disabled { opacity: .4; }
   .hidden { display: none !important; }
   .empty { color: var(--muted); font-size: 15px; text-align: center; padding: 8px 0; }
 
   @media (max-width: 380px) { h1 { font-size: 15px; letter-spacing: .3px; } }
 
-  /* iPad / wide landscape: three columns */
+  /* iPad / wide landscape: three columns, Now card across the top */
   @media (min-width: 900px) and (orientation: landscape) {
     body { font-size: 18px; }
-    h1 { font-size: 24px; margin-bottom: 18px; }
-    .wrap { max-width: 1100px; grid-template-columns: 1fr 1fr 1fr; align-items: start; gap: 16px; }
-    .card { padding: 18px; }
+    h1 { font-size: 24px; }
+    .wrap { max-width: 1120px; grid-template-columns: 1fr 1fr 1fr; align-items: start; gap: 18px; }
+    .now { grid-column: 1 / -1; padding: 12px 16px; }
+    .now .l2 { font-size: 30px; }
+    .card { padding: 20px; }
     .inbox input { font-size: 30px; }
   }
 </style>
 </head>
 <body>
-<header><h1>CREW REST CALCULATOR</h1><button type="button" class="theme" id="theme" aria-label="Switch day or night colours">NIGHT</button></header>
+<header>
+  <h1>CREW REST CALCULATOR</h1>
+  <button type="button" class="theme" id="theme"></button>
+</header>
 <div class="wrap">
+  <section class="now hidden" id="now" aria-live="polite">
+    <div class="l1" id="vState"></div>
+    <div class="l2 num" id="vLeft"></div>
+    <div class="l3 num" id="vSub"></div>
+  </section>
+
   <section class="card" id="inputs">
     <div class="field">
       <label class="f" for="to">TAKE OFF TIME UTC<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-14.489 3.883l-4.45 -5.02l2.897 -.776l2.45 1.414l2.897 -.776l-3.743 -6.244l2.898 -.777l5.675 5.727z"/><path d="M3 21h18"/></svg></label>
@@ -125,7 +167,6 @@
     <h2>Rest<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h6l-6 8h6"/><path d="M14 4h6l-6 8h6"/></svg></h2>
     <div class="empty" id="rEmpty">Enter take off time and flight time</div>
     <div id="viz" class="hidden">
-      <div class="vnow"><span id="vState"></span><span class="big" id="vLeft"></span></div>
       <div class="vbar"><div class="vtag" id="vTag"></div><div class="vseg" id="vSeg"></div><div class="vcur" id="vCur"></div></div>
       <div class="vmk" id="vMk"></div>
       <div class="vax"><span id="vTo"></span><span id="vNext"></span><span id="vEta"></span></div>
@@ -143,8 +184,12 @@
 <script>
 (function () {
   "use strict";
+  var SHORTCUT = "Crew Rest Timer";
   var LEADS = [0, 5, 10, 15];
   var ORD = ["1st", "2nd", "3rd"];
+  var ALARM = "<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg>";
+  var MOON = "<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z'/></svg>";
+  var SUN = "<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0'/><path d='M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7'/></svg>";
   var $ = function (id) { return document.getElementById(id); };
   var toEl = $("to"), ftEl = $("ft"), opEl = $("op");
   var state = { n: 2, leads: [0, 0, 0], plan: null };
@@ -199,64 +244,73 @@
     $("err").textContent = err;
 
     if (!r) {
-      $("rTable").classList.add("hidden"); $("viz").classList.add("hidden"); $("rEmpty").classList.remove("hidden");
+      $("rTable").classList.add("hidden"); $("viz").classList.add("hidden"); $("now").classList.add("hidden");
+      $("rEmpty").classList.remove("hidden");
       $("cList").innerHTML = ""; $("cEmpty").classList.remove("hidden");
       return;
     }
     var t0 = anchor(toMin, ftMin, Date.now()) - toMin * 60000; // 0000Z of take-off day
     var ms = function (min) { return t0 + min * 60000; };
-    state.plan = { r: r, ms: ms };
+    state.plan = { r: r, ms: ms, toMin: toMin };
 
-    var rows = [["Total rest", dur(r.total), z(ms(r.start)) + "–" + z(ms(r.end))]];
+    // Rest table: colour key strip matches the bar
+    var rows = ["<tr><td class='k'><span class='sw tot'></span>Total rest</td><td class='mid'>" + z(ms(r.start)) + "–" + z(ms(r.end)) +
+      "</td><td class='v'>" + dur(r.total) + "</td></tr>"];
     r.rests.forEach(function (x, i) {
-      rows.push([ORD[i] + " rest", dur(x.len), z(ms(x.start)) + "–" + z(ms(x.end))]);
+      rows.push("<tr data-i='" + i + "'><td class='k'><span class='sw' style='background:var(--r" + (i + 1) + ")'></span>" + ORD[i] +
+        " rest</td><td class='mid'>" + z(ms(x.start)) + "–" + z(ms(x.end)) + "</td><td class='v'>" + dur(x.len) + "</td></tr>");
     });
-    rows.push(["ETA", z(ms(r.eta)), ""]);
-    $("rBody").innerHTML = rows.map(function (w) {
-      return "<tr><td>" + w[0] + "</td><td class='mid'>" + w[2] + "</td><td class='v'>" + w[1] + "</td></tr>";
-    }).join("");
+    rows.push("<tr><td class='k'><span class='sw' style='background:transparent'></span>ETA</td><td class='mid'></td><td class='v'>" + z(ms(r.eta)) + "</td></tr>");
+    $("rBody").innerHTML = rows.join("");
     $("rTable").classList.remove("hidden"); $("rEmpty").classList.add("hidden");
+
+    // Bar: grey = no rest; rests labelled inside
     $("viz").classList.remove("hidden");
-    var span = ftMin;
-    var segs = [["pp", 30]].concat(r.rests.map(function (x, i) { return ["r" + (i + 1), x.len]; })).concat([["pp", 60]]);
+    var segs = [["pp", 30, ""]].concat(r.rests.map(function (x, i) { return ["r" + (i + 1), x.len, ORD[i]]; })).concat([["pp", 60, ""]]);
     $("vSeg").innerHTML = segs.map(function (g) {
-      return "<div style='width:" + (g[1] / span * 100) + "%;background:var(--" + g[0] + ")'></div>";
+      return "<div style='width:" + (g[1] / ftMin * 100) + "%;background:var(--" + g[0] + ");color:var(--" + g[0] + "t)'>" + g[2] + "</div>";
     }).join("");
     $("vTo").textContent = "T/O " + z(ms(toMin));
     $("vEta").textContent = "ETA " + z(ms(r.eta));
-    state.plan.toMin = toMin;
 
     $("cList").innerHTML = r.rests.map(function (x, i) {
       var segs = LEADS.map(function (l) {
         return "<button type='button' data-i='" + i + "' data-l='" + l + "' aria-pressed='" + (state.leads[i] === l) + "'>" +
           (l === 0 ? "At" : "−" + l) + "</button>";
       }).join("");
-      return "<div class='call' data-i='" + i + "'><div class='top'><span>End " + ORD[i] + " rest<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg> <span class='ho'>" +
-        z(ms(x.end)) + "</span></span><span class='ct' id='ct" + i + "'>" + z(ms(x.end - state.leads[i])) +
-        "</span></div><div class='tm'><span>Clock timer</span><span class='tv' id='tm" + i + "'></span></div>" +
+      return "<div class='call' data-i='" + i + "'><div class='top'><span>End " + ORD[i] + " rest" + ALARM + " <span class='ho'>" +
+        z(ms(x.end)) + "</span></span><span class='ct' id='ct" + i + "'>" + z(ms(x.end - state.leads[i])) + "</span></div>" +
+        "<div class='tm'><span>Clock timer <b id='tm" + i + "'></b></span>" +
+        "<button type='button' class='tbtn' id='tb" + i + "' data-i='" + i + "'>START TIMER</button></div>" +
         "<div class='seg sm'>" + segs + "</div></div>";
     }).join("");
     $("cEmpty").classList.add("hidden");
     tick();
   }
 
-  // Live "now" view: state line, countdown, current-time line and tag, call markers, next call.
-  var ALARM = "<svg class='ic' viewBox='0 0 24 24' aria-hidden='true'><path d='M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0'/><path d='M12 10v3h2'/><path d='M7 4l-2.75 2'/><path d='M17 4l2.75 2'/></svg>";
+  // Live view: Now card, current-time line and tag, current rest row, call markers, timers.
   function tick() {
     var p = state.plan; if (!p) return;
     var r = p.r, now = Date.now();
     var t0 = p.ms(p.toMin), t1 = p.ms(r.eta), span = t1 - t0;
     var mins = function (t) { return Math.ceil((t - now) / 60000); };
-    var st = "", left = "", i;
-    if (now < t0) { st = "1st rest starts " + z(p.ms(r.start)); left = "in " + dur(mins(p.ms(r.start))); }
-    else if (now < p.ms(r.start)) { st = "1st rest in"; left = dur(mins(p.ms(r.start))); }
+    var l1 = "", l2 = "", l3 = "", ci = -1, i;
+    if (now < t0) { l1 = "1st rest starts in"; l2 = dur(mins(p.ms(r.start))); l3 = "at " + z(p.ms(r.start)); }
+    else if (now < p.ms(r.start)) { l1 = "1st rest starts in"; l2 = dur(mins(p.ms(r.start))); l3 = "at " + z(p.ms(r.start)); }
     else if (now < p.ms(r.end)) {
       for (i = 0; i < r.rests.length; i++) if (now < p.ms(r.rests[i].end)) break;
-      st = ORD[i] + " rest now"; left = dur(mins(p.ms(r.rests[i].end))) + " left";
+      ci = i;
+      l1 = ORD[i] + " rest now"; l2 = dur(mins(p.ms(r.rests[i].end))) + " left"; l3 = "ends " + z(p.ms(r.rests[i].end));
     }
-    else if (now < t1) { st = "Rest complete"; left = "ETA in " + dur(mins(t1)); }
-    else { st = "Flight complete"; left = ""; }
-    $("vState").textContent = st; $("vLeft").textContent = left;
+    else if (now < t1) { l1 = "Rest complete"; l2 = dur(mins(t1)) + " to ETA"; l3 = "ETA " + z(t1); }
+    else { l1 = "Flight complete"; l2 = ""; l3 = "ETA " + z(t1); }
+    $("now").classList.remove("hidden");
+    $("vState").textContent = l1; $("vLeft").textContent = l2; $("vSub").textContent = l3;
+    $("vLeft").style.display = l2 ? "" : "none";
+
+    [].forEach.call(document.querySelectorAll("#rBody tr[data-i]"), function (tr) {
+      tr.classList.toggle("cur", +tr.dataset.i === ci);
+    });
 
     var inFlight = now >= t0 && now < t1;
     var pct = Math.max(0, Math.min(100, (now - t0) / span * 100));
@@ -272,8 +326,9 @@
     $("vMk").innerHTML = r.rests.map(function (x, k) {
       var t = p.ms(x.end - state.leads[k]);
       if (t > now && (next === null || t < next)) next = t;
-      var tm = $("tm" + k);
+      var tm = $("tm" + k), tb = $("tb" + k);
       if (tm) tm.textContent = t > now ? dur(Math.floor((t - now) / 60000)) : "Passed";
+      if (tb) tb.disabled = t <= now;
       return ALARM.replace("class='ic'", "class='ic' style='left:" + ((t - t0) / span * 100) + "%'");
     }).join("");
     $("vNext").innerHTML = next === null ? "No more calls" : "Next call " + z(next) + ALARM;
@@ -281,7 +336,6 @@
   setInterval(tick, 30000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
 
-  // Input formatting
   // HH:MM inputs: colon auto-inserted while typing.
   function colon(el) {
     el.addEventListener("input", function (e) {
@@ -300,6 +354,7 @@
   });
   $("cList").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
+    if (b.classList.contains("tbtn")) { startTimer(+b.dataset.i); return; }
     state.leads[+b.dataset.i] = +b.dataset.l;
     render();
   });
@@ -309,12 +364,21 @@
     render();
   });
 
+  // Start the iOS Clock timer through the "Crew Rest Timer" Shortcut (input = seconds until the call).
+  function startTimer(k) {
+    var p = state.plan; if (!p) return;
+    var sec = Math.round((p.ms(p.r.rests[k].end - state.leads[k]) - Date.now()) / 1000);
+    if (sec <= 0) { render(); return; }
+    CR.launch("shortcuts://run-shortcut?name=" + encodeURIComponent(SHORTCUT) + "&input=text&text=" + sec);
+  }
+
   // Day / night colours. Saved on this device; first launch follows the phone's dark setting.
   var themeBtn = $("theme");
   function setTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
-    themeBtn.textContent = t === "night" ? "DAY" : "NIGHT";
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0a0f1a" : "#e9edf1");
+    themeBtn.innerHTML = t === "night" ? SUN : MOON;
+    themeBtn.setAttribute("aria-label", t === "night" ? "Switch to day colours" : "Switch to night colours");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "night" ? "#0a0f1a" : "#eef2f6");
     try { localStorage.setItem("crTheme", t); } catch (e) {}
   }
   themeBtn.addEventListener("click", function () {
@@ -324,7 +388,8 @@
   try { saved = localStorage.getItem("crTheme"); } catch (e) {}
   setTheme(saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "day"));
 
-  window.CR = { calc: calc, anchor: anchor, state: state, render: render, tick: tick };
+  window.CR = { calc: calc, anchor: anchor, state: state, render: render, tick: tick,
+    launch: function (url) { window.location.href = url; } };
 
   if ("serviceWorker" in navigator && window.isSecureContext) {
     navigator.serviceWorker.register("sw.js");
