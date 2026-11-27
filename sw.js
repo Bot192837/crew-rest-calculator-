@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION after every change so phones pick up the update.
-const VERSION = "crew-rest-v16";
+const VERSION = "crew-rest-v17";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
