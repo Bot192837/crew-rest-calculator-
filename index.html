@@ -55,14 +55,12 @@
   .k-eyes { transform-box: fill-box; transform-origin: center; transition: transform .09s; }
   .kip.blink .k-eyes { transform: scaleY(.12); }
   .k-m2, .k-m3 { display: none; } .kip.smile .k-m1 { display: none; } .kip.smile .k-m2 { display: inline; }
-  .k-arm, .k-wave, .k-phone { opacity: 0; transition: opacity .25s; }
+  .k-arm, .k-phone { opacity: 0; transition: opacity .25s; }
   .k-arm { transform: translateY(8px); transition: opacity .3s, transform .3s; }
   .kip.k-watch .k-arm { opacity: 1; transform: none; animation: kipWrist 2.4s ease-in-out infinite; }
   .k-look { transition: transform .2s; }
   .kip.k-watch .k-look { transform: translate(-2px, 2px); }
   /* Idle actions */
-  .k-wave { transform-box: view-box; transform-origin: 49px 54px; }
-  .kip.a-wave .k-wave { opacity: 1; animation: kipWave 1.5s ease-in-out; }
   .kip.a-look .k-look { animation: kipLookEyes 1.9s ease-in-out; }
   .kip.a-look .k-head { animation: kipLookHead 1.9s ease-in-out; }
   .kip.a-yawn .k-m1, .kip.a-yawn .k-m2 { display: none; } .kip.a-yawn .k-m3 { display: inline; animation: kipYawn 1.7s ease-in-out; transform-box: fill-box; transform-origin: center center; }
@@ -79,7 +77,6 @@
   .kip.k-call .k-m1 { display: none; } .kip.k-call .k-m2 { display: inline; }
   @keyframes kipWrist { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
   @keyframes kipBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-  @keyframes kipWave { 0%, 100% { transform: rotate(0); } 15%, 48%, 81% { transform: rotate(-22deg); } 31%, 64% { transform: rotate(14deg); } }
   @keyframes kipLookEyes { 0%, 100% { transform: translateX(0); } 20%, 40% { transform: translateX(-4px); } 60%, 80% { transform: translateX(4px); } }
   @keyframes kipLookHead { 0%, 100% { transform: translateX(0) rotate(0); } 20%, 40% { transform: translateX(-3px) rotate(-5deg); } 60%, 80% { transform: translateX(3px) rotate(5deg); } }
   .k-head { transform-box: view-box; transform-origin: 32px 50px; }
@@ -196,8 +193,6 @@
       </g>
       <g class="k-arm"><path d="M4 66q1-13 13-17" stroke="#8e95a0" stroke-width="7" fill="none" stroke-linecap="round"/>
         <circle cx="17.5" cy="49" r="3.6" fill="#f2b85a" stroke="#2b2f36" stroke-width="1.2"/></g>
-      <g class="k-wave"><path d="M47 54q11-2 13-13" stroke="#8e95a0" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <circle cx="60" cy="40" r="4.8" fill="#8e95a0"/><path d="M58 37.5v-2M60.5 37v-2.2M63 38v-2" stroke="#6f7680" stroke-width="1.2" stroke-linecap="round"/></g>
       <g class="k-phone">
         <path d="M62 68q2-12-6-19" stroke="#8e95a0" stroke-width="7" fill="none" stroke-linecap="round"/>
         <rect x="49" y="31" width="7.5" height="15" rx="2" fill="#2b2f36" transform="rotate(18 52.75 38.5)"/>
@@ -448,10 +443,10 @@
       try { localStorage.setItem("crAck", JSON.stringify(acked)); } catch (e) {}
       kipState();
     }
-    act("a-wave", true);
+    act("smile", true);
   });
   // Idle actions: one random action every 5-10 s; paused while Kip watches the clock or calls.
-  var ACTS = { "smile": 2000, "a-wave": 1600, "a-look": 1950, "a-yawn": 1750, "a-ear": 1000 }, busy = false, last = "";
+  var ACTS = { "smile": 2000, "a-look": 1950, "a-yawn": 1750, "a-ear": 1000 }, busy = false, last = "";
   function act(name, force) {
     if (!ACTS[name] || reduce.matches || busy) return false;
     if (!force && (kip.classList.contains("k-call") || kip.classList.contains("k-watch"))) return false;
